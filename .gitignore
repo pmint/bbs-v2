@@ -1,0 +1,5 @@
+/vendor/
+/storage/data/bbs.sqlite
+/.phpunit.result.cache
+/config/app.local.php
+
