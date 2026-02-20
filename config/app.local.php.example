@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    // Local-only overrides.
+    // Example:
+    // 'debug' => true,
+    // 'app_url' => 'http://localhost:8000/',
+    // 'url_mode' => 'rewrite',
+    // 'database' => [
+    //     'path' => __DIR__ . '/../storage/data/bbs.sqlite',
+    // ],
+];
+

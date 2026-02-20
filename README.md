@@ -17,6 +17,25 @@ Minimal MVC rewrite scaffold for a BBS.
 
 - PHP 8.1+
 - PDO SQLite extension
+- Composer
+
+## Setup
+
+```bash
+cd bbs-v2
+composer install
+```
+
+### Local config override
+
+Default config is `config/app.php`.  
+For local-only overrides, copy and edit:
+
+```bash
+copy config\\app.local.php.example config\\app.local.php
+```
+
+`config/app.local.php` is ignored by git.
 
 ## Run (local)
 
@@ -31,18 +50,36 @@ Open:
 - `http://localhost:8000/posts`
 - `http://localhost:8000/posts/create`
 
-## Implemented in this scaffold
-
-- MVC + Service + Repository split
-- SQLite persistence
-- CSRF protection for write operations
-- Post create / update / delete
-- PHPUnit test skeleton
-
-## Run tests
+## Tests
 
 ```bash
 cd bbs-v2
-composer install
 composer test
 ```
+
+## Runtime data
+
+- DB file: `storage/data/bbs.sqlite`
+- This file is ignored by git to avoid accidental overwrite on deploy.
+
+## Backup (minimal manual flow)
+
+Keep this note even in preview environments:
+
+```bash
+copy storage\\data\\bbs.sqlite storage\\data\\bbs.sqlite.bak
+```
+
+Before deployments that replace files, ensure `storage/data/bbs.sqlite` is preserved.
+
+## CI
+
+GitHub Actions workflow is included:
+
+- `.github/workflows/phpunit.yml`
+
+On push/PR, it runs:
+
+1. `composer validate --strict`
+2. `composer install --prefer-dist`
+3. `composer test`
