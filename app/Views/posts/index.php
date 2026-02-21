@@ -15,28 +15,26 @@ $isNarrowing = (bool) ($isNarrowing ?? false);
 $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
 ?>
 <h1>あやしいわーるど＠あやしいわーるど</h1>
-<form method="get" action="<?= Url::to('/posts') ?>">
-    <input type="hidden" name="q" value="<?= htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8') ?>">
-    <input type="hidden" name="ng" value="<?= htmlspecialchars($ngWordsRaw, ENT_QUOTES, 'UTF-8') ?>">
-    <button type="submit">リロード</button>
-</form>
-<div>
-    <button type="button" id="toggle-filter-panel">絞り込みパネルを開く</button>
-    <form method="get" action="<?= Url::to('/posts') ?>" style="display:inline-block;">
-        <input type="hidden" name="clear_filter" value="1">
-        <button type="submit">絞り込み解除</button>
+<div class="list-toolbar">
+    <form method="get" action="<?= Url::to('/posts') ?>">
+        <input type="hidden" name="q" value="<?= htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8') ?>">
+        <input type="hidden" name="ng" value="<?= htmlspecialchars($ngWordsRaw, ENT_QUOTES, 'UTF-8') ?>">
+        <button type="submit">リロード</button>
     </form>
+    <button type="button" id="toggle-filter-panel">絞り込みパネルを開く</button>
 </div>
 <form method="get" action="<?= Url::to('/posts') ?>">
-    <div id="filter-panel" style="display:none;">
+    <div id="filter-panel" class="filter-panel" style="display:none;">
         <label for="post-filter-q">絞り込み</label>
         <input id="post-filter-q" name="q" type="text" value="<?= htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8') ?>">
         <label for="post-ng-words">NGワード(|区切り)</label>
         <input id="post-ng-words" name="ng" type="text" value="<?= htmlspecialchars($ngWordsRaw, ENT_QUOTES, 'UTF-8') ?>">
-        <button type="submit">絞り込み</button>
+        <div class="filter-actions">
+            <button type="submit">絞り込み・NG設定</button>
+            <button type="submit" name="clear_filter" value="1">絞り込みだけ解除</button>
+        </div>
         <?php if (!empty($tagList)): ?>
-            <p class="meta">ハッシュタグ:</p>
-            <p class="meta">
+            <p class="meta">ハッシュタグ:
                 <?php foreach ($tagList as $item): ?>
                     <?php $tag = (string) ($item['tag'] ?? ''); ?>
                     <?php if ($tag === '') { continue; } ?>
@@ -47,7 +45,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
     </div>
 </form>
 <?php if ($hasNgWords && $hiddenByNgCount > 0): ?>
-    <p class="meta">NGで非表示：<?= (int) $hiddenByNgCount ?>件</p>
+    <p class="meta">NG：<?= (int) $hiddenByNgCount ?>件</p>
 <?php endif; ?>
 
 <script>

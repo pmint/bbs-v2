@@ -42,9 +42,9 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
         .nav a { margin-right: 14px; text-decoration: none; }
         .footer {
             margin-top: 14px;
-            padding-top: 8px;
-            border-top: 1px solid #c0c0c0;
+            padding-top: 10px;
             font-size: 0.9rem;
+            text-align: right;
         }
         h1 {
             margin: 2px 0 10px;
@@ -122,6 +122,25 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
         .post-controls { margin-top: 6px; }
         .post-controls p { margin: 0; display: inline-block; margin-right: 10px; }
         .post-controls form { margin: 0; display: inline-block; }
+        .list-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            margin: 0 0 12px;
+            flex-wrap: wrap;
+        }
+        .list-toolbar form { margin: 0; }
+        .filter-panel {
+            margin: 0 0 14px;
+            max-width: 760px;
+        }
+        .filter-actions {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            flex-wrap: wrap;
+        }
         .like-btn {
             margin-top: 10px;
             background: transparent;
@@ -194,7 +213,7 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
         <a href="<?= Url::to('/posts') ?>">掲示板</a>
         <a href="<?= Url::to('/posts/create') ?>">書き込み</a>
         <a href="<?= Url::to('/logs') ?>">過去ログ</a>
-        <a href="mailto:pmint.name@gmail.com">広報室</a>
+        <a href="mailto:pmint.name@gmail.com">連絡先</a>
     </div>
     <hr>
     <?= $content ?>
