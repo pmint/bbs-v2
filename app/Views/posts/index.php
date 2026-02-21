@@ -31,19 +31,22 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
         <input id="post-ng-words" name="ng" type="text" value="<?= htmlspecialchars($ngWordsRaw, ENT_QUOTES, 'UTF-8') ?>">
         <div class="filter-actions">
             <button type="submit">絞り込み・NG設定</button>
-            <button type="submit" name="clear_filter" value="1">絞り込みだけ解除</button>
         </div>
-        <?php if (!empty($tagList)): ?>
-            <p class="meta">ハッシュタグ:
-                <?php foreach ($tagList as $item): ?>
-                    <?php $tag = (string) ($item['tag'] ?? ''); ?>
-                    <?php if ($tag === '') { continue; } ?>
-                    <a href="<?= Url::to('/posts') ?>?q=<?= urlencode('#' . $tag) ?>&amp;ng=<?= urlencode($ngWordsRaw) ?>">#<?= htmlspecialchars($tag, ENT_QUOTES, 'UTF-8') ?>(<?= (int) ($item['count'] ?? 0) ?>)</a>
-                <?php endforeach; ?>
-            </p>
-        <?php endif; ?>
     </div>
 </form>
+<div class="tag-controls">
+    <p class="meta">
+        <?php if (!empty($tagList)): ?>
+            ハッシュタグ:
+            <?php foreach ($tagList as $item): ?>
+                <?php $tag = (string) ($item['tag'] ?? ''); ?>
+                <?php if ($tag === '') { continue; } ?>
+                <a href="<?= Url::to('/posts') ?>?q=<?= urlencode('#' . $tag) ?>&amp;ng=<?= urlencode($ngWordsRaw) ?>">#<?= htmlspecialchars($tag, ENT_QUOTES, 'UTF-8') ?>(<?= (int) ($item['count'] ?? 0) ?>)</a>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </p>
+    <a class="clear-filter-link" href="<?= Url::to('/posts') ?>?clear_filter=1&amp;ng=<?= urlencode($ngWordsRaw) ?>">絞り込みだけ解除</a>
+</div>
 <?php if ($hasNgWords && $hiddenByNgCount > 0): ?>
     <p class="meta">NG：<?= (int) $hiddenByNgCount ?>件</p>
 <?php endif; ?>

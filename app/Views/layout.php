@@ -134,6 +134,15 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
             margin: 0 0 14px;
             max-width: 760px;
         }
+        .tag-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 10px;
+            flex-wrap: wrap;
+        }
+        .tag-controls .meta { margin: 0; }
+        .tag-controls .clear-filter-link { white-space: nowrap; }
         .filter-actions {
             margin-top: 10px;
             display: flex;
