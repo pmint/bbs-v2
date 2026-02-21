@@ -40,6 +40,12 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
         }
         .nav { font-size: 0.95rem; margin-bottom: 8px; }
         .nav a { margin-right: 14px; text-decoration: none; }
+        .footer {
+            margin-top: 14px;
+            padding-top: 8px;
+            border-top: 1px solid #c0c0c0;
+            font-size: 0.9rem;
+        }
         h1 {
             margin: 2px 0 10px;
             font-size: 1rem;
@@ -192,6 +198,9 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
     </div>
     <hr>
     <?= $content ?>
+    <div class="footer">
+        <a href="https://github.com/pmint/bbs-v2">bbs-v2</a>
+    </div>
 </div>
 <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 <script>
