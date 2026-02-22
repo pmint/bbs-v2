@@ -222,7 +222,7 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
         <a href="<?= Url::to('/posts') ?>">掲示板</a>
         <a href="<?= Url::to('/posts/create') ?>">書き込み</a>
         <a href="<?= Url::to('/logs') ?>">過去ログ</a>
-        <a href="mailto:pmint.name@gmail.com">連絡先</a>
+        <a href="mailto:pmint.name@gmail.com">連絡先✉️</a>
     </div>
     <hr>
     <?= $content ?>

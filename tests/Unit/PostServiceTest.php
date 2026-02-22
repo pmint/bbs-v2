@@ -152,4 +152,19 @@ final class PostServiceTest extends TestCase
         $unliked = $service->toggleLike((int) $post->id, true);
         self::assertSame(0, $unliked->likeCount);
     }
+
+    public function testListRecentPostsReturnsOnlyWithinDaysRange(): void
+    {
+        $repo = new InMemoryPostRepository();
+        $service = new PostService($repo);
+        $repo->createWithDate('alice', 'old', '#old', date('Y-m-d H:i:s', strtotime('-8 days')));
+        $repo->createWithDate('bob', 'new', '#new', date('Y-m-d H:i:s', strtotime('-6 days')));
+        $repo->createWithDate('carol', 'today', '#today', date('Y-m-d H:i:s'));
+
+        $posts = $service->listRecentPosts(7);
+
+        self::assertCount(2, $posts);
+        self::assertSame('today', $posts[0]->title);
+        self::assertSame('new', $posts[1]->title);
+    }
 }

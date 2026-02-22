@@ -36,7 +36,11 @@ final class PostController
         if ($hasNgWords) {
             [$posts, $hiddenByNgCount] = $this->applyNgWordFilter($posts, $ngWords);
         }
-        $tagList = Hashtag::buildTagCounts($posts, 15);
+        $recentPostsForTags = $this->service->listRecentPosts(7);
+        if ($hasNgWords) {
+            [$recentPostsForTags, ] = $this->applyNgWordFilter($recentPostsForTags, $ngWords);
+        }
+        $tagList = Hashtag::buildTagCounts($recentPostsForTags, 15);
         $canManageMap = [];
         $likedMap = $this->buildLikedMap($posts);
         foreach ($posts as $post) {

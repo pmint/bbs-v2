@@ -32,6 +32,15 @@ final class PostService
     }
 
     /** @return list<Post> */
+    public function listRecentPosts(int $days = 7): array
+    {
+        $days = max(1, $days);
+        $toDate = date('Y-m-d');
+        $fromDate = date('Y-m-d', strtotime('-' . ($days - 1) . ' days'));
+        return $this->posts->search('', $fromDate, $toDate);
+    }
+
+    /** @return list<Post> */
     public function listThreadPosts(int $threadId): array
     {
         if ($threadId <= 0) {
