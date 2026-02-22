@@ -2,4 +2,6 @@
 /storage/data/bbs.sqlite
 /.phpunit.result.cache
 /config/app.local.php
-
+/AGENTS.md
+Thumbs.db
+.vscode/
