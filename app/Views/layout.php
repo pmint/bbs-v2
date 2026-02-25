@@ -130,6 +130,17 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
             flex-wrap: wrap;
         }
         .list-toolbar form { margin: 0; }
+        .unread-reply-bar {
+            margin: 0 0 10px;
+            font-size: 0.92rem;
+            color: #e7f8f4;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 0.8rem;
+            align-items: center;
+        }
+        .unread-reply-bar strong { color: #ffffff; }
+        .unread-reply-bar a { white-space: nowrap; }
         .filter-panel {
             margin: 0 0 14px;
             max-width: 760px;

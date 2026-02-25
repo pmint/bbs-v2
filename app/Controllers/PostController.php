@@ -24,6 +24,11 @@ final class PostController
         $ownerKey = $this->getOrCreateOwnerKey();
         $ownerKeyHash = hash('sha256', $ownerKey);
         $allPosts = $this->service->listPosts();
+        $markReadReplyId = $this->resolveMarkReadReplyId();
+        if ($markReadReplyId !== null) {
+            $this->markReplyAsRead($allPosts, $ownerKeyHash, $markReadReplyId);
+        }
+        $unreadReplyItems = $this->buildUnreadReplyItems($allPosts, $ownerKeyHash);
         $replyNotices = $this->buildReplyNotices($allPosts, $ownerKeyHash);
         $filterQuery = $this->resolvePostFilterQuery();
         $ngWordsRaw = $this->resolvePostNgWordsRaw();
@@ -60,6 +65,8 @@ final class PostController
             'isNarrowing' => $isNarrowing,
             'tagList' => $tagList,
             'notices' => $replyNotices,
+            'unreadReplyItems' => $unreadReplyItems,
+            'unreadReplyCount' => count($unreadReplyItems),
             'canManageMap' => $canManageMap,
             'likedMap' => $likedMap,
             'old' => $_SESSION['old'] ?? [],
@@ -346,6 +353,128 @@ final class PostController
             return $redirectTo;
         }
         return Url::to('/posts');
+    }
+
+    private function resolveMarkReadReplyId(): ?int
+    {
+        if (!array_key_exists('mark_read_reply_id', $_GET)) {
+            return null;
+        }
+        $replyId = (int) ($_GET['mark_read_reply_id'] ?? 0);
+        return $replyId > 0 ? $replyId : null;
+    }
+
+    /** @param list<Post> $allPosts */
+    private function markReplyAsRead(array $allPosts, string $ownerKeyHash, int $replyId): void
+    {
+        $myPostIds = $this->buildMyPostIds($allPosts, $ownerKeyHash);
+        foreach ($allPosts as $post) {
+            if ($post->id === null || (int) $post->id !== $replyId) {
+                continue;
+            }
+            if ($post->parentId === null) {
+                return;
+            }
+            $parentId = (int) $post->parentId;
+            if (!isset($myPostIds[$parentId])) {
+                return;
+            }
+            if ($post->ownerKeyHash === $ownerKeyHash) {
+                return;
+            }
+            $readIds = $this->getReadReplyIdsMap();
+            $readIds[$replyId] = true;
+            $this->saveReadReplyIdsMap($readIds);
+            return;
+        }
+    }
+
+    /**
+     * @param list<Post> $allPosts
+     * @return list<array{replyId:int,parentId:int,parentTitle:string,replyAuthor:string,replyCreatedAt:string}>
+     */
+    private function buildUnreadReplyItems(array $allPosts, string $ownerKeyHash): array
+    {
+        $myPostIds = $this->buildMyPostIds($allPosts, $ownerKeyHash);
+        $titlesById = [];
+        foreach ($allPosts as $post) {
+            if ($post->id === null) {
+                continue;
+            }
+            $titlesById[(int) $post->id] = $post->title;
+        }
+
+        $readIds = $this->getReadReplyIdsMap();
+        $items = [];
+        foreach ($allPosts as $post) {
+            if ($post->id === null || $post->parentId === null) {
+                continue;
+            }
+            $replyId = (int) $post->id;
+            $parentId = (int) $post->parentId;
+            if (!isset($myPostIds[$parentId])) {
+                continue;
+            }
+            if ($post->ownerKeyHash === $ownerKeyHash) {
+                continue;
+            }
+            if (isset($readIds[$replyId])) {
+                continue;
+            }
+
+            $items[] = [
+                'replyId' => $replyId,
+                'parentId' => $parentId,
+                'parentTitle' => (string) ($titlesById[$parentId] ?? '（題名なし）'),
+                'replyAuthor' => $post->author,
+                'replyCreatedAt' => $post->createdAt,
+            ];
+        }
+        return $items;
+    }
+
+    /**
+     * @param list<Post> $allPosts
+     * @return array<int,bool>
+     */
+    private function buildMyPostIds(array $allPosts, string $ownerKeyHash): array
+    {
+        $myPostIds = [];
+        foreach ($allPosts as $post) {
+            if ($post->id === null) {
+                continue;
+            }
+            if ($post->ownerKeyHash === $ownerKeyHash) {
+                $myPostIds[(int) $post->id] = true;
+            }
+        }
+        return $myPostIds;
+    }
+
+    /** @return array<int,bool> */
+    private function getReadReplyIdsMap(): array
+    {
+        $raw = $_SESSION['read_reply_ids'] ?? [];
+        $map = [];
+        if (!is_array($raw)) {
+            return $map;
+        }
+        foreach ($raw as $id) {
+            $id = (int) $id;
+            if ($id <= 0) {
+                continue;
+            }
+            $map[$id] = true;
+        }
+        return $map;
+    }
+
+    /** @param array<int,bool> $map */
+    private function saveReadReplyIdsMap(array $map): void
+    {
+        $ids = array_keys($map);
+        rsort($ids, SORT_NUMERIC);
+        $_SESSION['read_reply_ids'] = array_slice($ids, 0, 500);
     }
 
     /**

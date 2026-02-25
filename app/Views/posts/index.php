@@ -7,6 +7,8 @@ use App\Support\Url;
 $canManageMap = is_array($canManageMap ?? null) ? $canManageMap : [];
 $likedMap = is_array($likedMap ?? null) ? $likedMap : [];
 $tagList = is_array($tagList ?? null) ? $tagList : [];
+$unreadReplyItems = is_array($unreadReplyItems ?? null) ? $unreadReplyItems : [];
+$unreadReplyCount = (int) ($unreadReplyCount ?? 0);
 $filterQuery = (string) ($filterQuery ?? '');
 $ngWordsRaw = (string) ($ngWordsRaw ?? '');
 $hasNgWords = (bool) ($hasNgWords ?? false);
@@ -15,6 +17,16 @@ $isNarrowing = (bool) ($isNarrowing ?? false);
 $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
 ?>
 <h1>あやしいわーるど＠あやしいわーるど</h1>
+<?php if ($unreadReplyCount > 0): ?>
+    <div class="unread-reply-bar">
+        <strong>未読返信 <?= (int) $unreadReplyCount ?>件:</strong>
+        <?php foreach ($unreadReplyItems as $item): ?>
+            <?php $replyId = (int) ($item['replyId'] ?? 0); ?>
+            <?php if ($replyId <= 0) { continue; } ?>
+            <a href="<?= Url::to('/posts') ?>?mark_read_reply_id=<?= $replyId ?>#post-<?= $replyId ?>">「<?= htmlspecialchars((string) ($item['parentTitle'] ?? '（題名なし）'), ENT_QUOTES, 'UTF-8') ?>」への返信</a>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 <div class="list-toolbar">
     <form method="get" action="<?= Url::to('/posts') ?>">
         <input type="hidden" name="q" value="<?= htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8') ?>">
@@ -72,7 +84,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
     <?php endif; ?>
 <?php else: ?>
     <?php foreach ($posts as $post): ?>
-        <article class="card">
+        <article class="card" id="post-<?= (int) $post->id ?>">
             <div class="post-head">
                 <h2 class="post-title"><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8') ?></h2>
                 <span class="post-meta">
