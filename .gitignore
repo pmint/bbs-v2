@@ -1,7 +1,8 @@
-/vendor/
-/storage/data/bbs.sqlite
+/.idea/
 /.phpunit.result.cache
-/config/app.local.php
+/.vscode/
 /AGENTS.md
+/config/app.local.php
+/storage/data/bbs.sqlite
+/vendor/
 Thumbs.db
-.vscode/
