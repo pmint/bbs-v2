@@ -83,3 +83,9 @@ On push/PR, it runs:
 1. `composer validate --strict`
 2. `composer install --prefer-dist`
 3. `composer test`
+
+## vNext docs
+
+- `docs/content-style-guide.md`: 文言ガイド
+- `docs/terminology-glossary.md`: 用語辞書
+- `docs/feature-priority.md`: 機能優先度表
