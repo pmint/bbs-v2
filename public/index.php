@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\LogController;
+use App\Controllers\PageController;
 use App\Controllers\PostController;
 use App\Infrastructure\Persistence\SqlitePostRepository;
 use App\Services\LogService;
@@ -17,6 +18,7 @@ $service = new PostService($repository);
 $logService = new LogService($repository);
 $controller = new PostController($service);
 $logController = new LogController($logService);
+$pageController = new PageController();
 
 $router = new Router();
 $router->get('/', static fn(array $params): mixed => $controller->index());
@@ -30,5 +32,6 @@ $router->post('/posts/{id}/delete', static fn(array $params): mixed => $controll
 $router->post('/posts/{id}/like', static fn(array $params): mixed => $controller->toggleLike($params));
 $router->get('/logs', static fn(array $params): mixed => $logController->index());
 $router->get('/logs/download', static fn(array $params): mixed => $logController->download());
+$router->get('/press', static fn(array $params): mixed => $pageController->press());
 
 $router->dispatch($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/');

@@ -262,6 +262,7 @@ $swUrl = ($basePath !== '' ? $basePath : '') . '/sw.js';
         <a href="<?= Url::to('/posts') ?>">掲示板</a>
         <a href="<?= Url::to('/posts/create') ?>">書き込み</a>
         <a href="<?= Url::to('/logs') ?>">過去ログ</a>
+        <a href="<?= Url::to('/press') ?>">広報室</a>
         <a href="mailto:pmint.name@gmail.com">連絡先✉️</a>
     </div>
     <hr>
