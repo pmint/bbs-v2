@@ -35,7 +35,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
     </div>
 </form>
 <div class="tag-controls">
-    <p class="meta">
+    <p class="meta tag-list">
         <?php if (!empty($tagList)): ?>
             ハッシュタグ:
             <?php foreach ($tagList as $item): ?>

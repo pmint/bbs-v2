@@ -142,6 +142,29 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
             flex-wrap: wrap;
         }
         .tag-controls .meta { margin: 0; }
+        .tag-controls .tag-list {
+            flex: 1 1 auto;
+            min-width: 0;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 2px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(239, 239, 239, 0.35) transparent;
+        }
+        .tag-controls .tag-list::-webkit-scrollbar {
+            height: 6px;
+        }
+        .tag-controls .tag-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .tag-controls .tag-list::-webkit-scrollbar-thumb {
+            background: rgba(239, 239, 239, 0.3);
+            border-radius: 8px;
+        }
+        .tag-controls .tag-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(239, 239, 239, 0.45);
+        }
         .tag-controls .clear-filter-link { white-space: nowrap; }
         .filter-actions {
             margin-top: 10px;
