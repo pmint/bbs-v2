@@ -4,12 +4,18 @@ declare(strict_types=1);
 use App\Support\Url;
 
 $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
+$basePath = Url::basePath();
+$manifestUrl = ($basePath !== '' ? $basePath : '') . '/manifest.webmanifest';
+$swUrl = ($basePath !== '' ? $basePath : '') . '/sw.js';
 ?>
 <!doctype html>
 <html lang="ja">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#004040">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="<?= htmlspecialchars($manifestUrl, ENT_QUOTES, 'UTF-8') ?>">
     <title><?= htmlspecialchars($title ?? 'bbs-v2', ENT_QUOTES, 'UTF-8') ?></title>
     <style>
         html { scroll-behavior: smooth; }
@@ -267,6 +273,12 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
 <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 <script>
 (() => {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('<?= htmlspecialchars($swUrl, ENT_QUOTES, 'UTF-8') ?>').catch(() => {});
+        });
+    }
+
     const messages = <?= json_encode($flashMessages, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     if (!Array.isArray(messages) || messages.length === 0) return;
 

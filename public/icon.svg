@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#004040"/>
+  <rect x="36" y="36" width="440" height="440" fill="none" stroke="#ccffee" stroke-width="24"/>
+  <text x="256" y="300" text-anchor="middle" font-size="220" fill="#ccffee" font-family="sans-serif">ぁ</text>
+</svg>
