@@ -18,7 +18,7 @@ $service = new PostService($repository);
 $logService = new LogService($repository);
 $controller = new PostController($service);
 $logController = new LogController($logService);
-$pageController = new PageController();
+$pageController = new PageController($service);
 
 $router = new Router();
 $router->get('/', static fn(array $params): mixed => $controller->index());
