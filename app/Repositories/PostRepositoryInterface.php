@@ -31,12 +31,20 @@ interface PostRepositoryInterface
         string $body,
         ?int $parentId = null,
         ?int $threadId = null,
-        ?string $ownerKeyHash = null
+        ?string $ownerKeyHash = null,
+        bool $authorIsGenerated = false
     ): Post;
 
     public function isOwnedBy(int $id, string $ownerKeyHash): bool;
 
-    public function update(int $id, string $author, string $title, string $body, string $ownerKeyHash): ?Post;
+    public function update(
+        int $id,
+        string $author,
+        string $title,
+        string $body,
+        string $ownerKeyHash,
+        bool $authorIsGenerated = false
+    ): ?Post;
 
     public function delete(int $id, string $ownerKeyHash): bool;
 

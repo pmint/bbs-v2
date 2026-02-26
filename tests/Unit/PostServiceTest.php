@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Services\PostService;
+use App\Support\AuthorEmoji;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -166,5 +167,41 @@ final class PostServiceTest extends TestCase
         self::assertCount(2, $posts);
         self::assertSame('today', $posts[0]->title);
         self::assertSame('new', $posts[1]->title);
+    }
+
+    public function testAuthorWithSecretIsStoredAsNameAndTwoEmoji(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $post = $service->createPost('alice#secret', 'hello', 'world');
+
+        self::assertSame('alice ' . AuthorEmoji::fromSecret('secret'), $post->author);
+        self::assertTrue($post->authorIsGenerated);
+    }
+
+    public function testAuthorWithoutSecretIsStoredAsIs(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $post = $service->createPost('alice', 'hello', 'world');
+
+        self::assertSame('alice', $post->author);
+        self::assertFalse($post->authorIsGenerated);
+    }
+
+    public function testAuthorWithEmptySecretIsStoredAsPlainName(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $post = $service->createPost('alice#', 'hello', 'world');
+
+        self::assertSame('alice', $post->author);
+        self::assertFalse($post->authorIsGenerated);
+    }
+
+    public function testAuthorWithOnlySecretIsStoredAsTwoEmoji(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $post = $service->createPost('#secret', 'hello', 'world');
+
+        self::assertSame(AuthorEmoji::fromSecret('secret'), $post->author);
+        self::assertTrue($post->authorIsGenerated);
     }
 }

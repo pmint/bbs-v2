@@ -27,7 +27,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
     public function all(): array
     {
         $stmt = $this->pdo->query(
-            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count FROM posts ORDER BY id DESC'
+            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated FROM posts ORDER BY id DESC'
         );
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $this->mapRowsToPosts($rows);
@@ -35,7 +35,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
 
     public function search(string $query = '', ?string $fromDate = null, ?string $toDate = null): array
     {
-        $sql = 'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count FROM posts WHERE 1=1';
+        $sql = 'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated FROM posts WHERE 1=1';
         $params = [];
 
         $query = trim($query);
@@ -81,7 +81,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
     public function findByDate(string $date): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count
+            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated
              FROM posts
              WHERE date(created_at) = :log_date
              ORDER BY id ASC'
@@ -94,7 +94,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
     public function findThreadPosts(int $threadId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count
+            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated
              FROM posts
              WHERE thread_id = :thread_id
              ORDER BY id ASC'
@@ -107,7 +107,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
     public function findById(int $id): ?Post
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count FROM posts WHERE id = :id LIMIT 1'
+            'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated FROM posts WHERE id = :id LIMIT 1'
         );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -124,7 +124,8 @@ final class SqlitePostRepository implements PostRepositoryInterface
             isset($row['parent_id']) ? ($row['parent_id'] !== null ? (int) $row['parent_id'] : null) : null,
             isset($row['thread_id']) ? ($row['thread_id'] !== null ? (int) $row['thread_id'] : null) : null,
             isset($row['owner_key_hash']) ? ($row['owner_key_hash'] !== null ? (string) $row['owner_key_hash'] : null) : null,
-            isset($row['like_count']) ? (int) $row['like_count'] : 0
+            isset($row['like_count']) ? (int) $row['like_count'] : 0,
+            isset($row['author_is_generated']) ? (int) $row['author_is_generated'] === 1 : false
         );
     }
 
@@ -134,14 +135,15 @@ final class SqlitePostRepository implements PostRepositoryInterface
         string $body,
         ?int $parentId = null,
         ?int $threadId = null,
-        ?string $ownerKeyHash = null
+        ?string $ownerKeyHash = null,
+        bool $authorIsGenerated = false
     ): Post
     {
         $createdAt = date('Y-m-d H:i:s');
 
         $stmt = $this->pdo->prepare(
-            'INSERT INTO posts (author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count)
-             VALUES (:author, :title, :body, :created_at, :parent_id, :thread_id, :owner_key_hash, :like_count)'
+            'INSERT INTO posts (author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated)
+             VALUES (:author, :title, :body, :created_at, :parent_id, :thread_id, :owner_key_hash, :like_count, :author_is_generated)'
         );
         $stmt->execute([
             ':author' => $author,
@@ -152,6 +154,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
             ':thread_id' => $threadId,
             ':owner_key_hash' => $ownerKeyHash,
             ':like_count' => 0,
+            ':author_is_generated' => $authorIsGenerated ? 1 : 0,
         ]);
 
         $newId = (int) $this->pdo->lastInsertId();
@@ -173,7 +176,8 @@ final class SqlitePostRepository implements PostRepositoryInterface
             $parentId,
             $threadId,
             $ownerKeyHash,
-            0
+            0,
+            $authorIsGenerated
         );
     }
 
@@ -189,11 +193,18 @@ final class SqlitePostRepository implements PostRepositoryInterface
         return (int) $stmt->fetchColumn() > 0;
     }
 
-    public function update(int $id, string $author, string $title, string $body, string $ownerKeyHash): ?Post
+    public function update(
+        int $id,
+        string $author,
+        string $title,
+        string $body,
+        string $ownerKeyHash,
+        bool $authorIsGenerated = false
+    ): ?Post
     {
         $stmt = $this->pdo->prepare(
             'UPDATE posts
-             SET author = :author, title = :title, body = :body
+             SET author = :author, title = :title, body = :body, author_is_generated = :author_is_generated
              WHERE id = :id AND owner_key_hash = :owner_key_hash'
         );
         $stmt->execute([
@@ -202,6 +213,7 @@ final class SqlitePostRepository implements PostRepositoryInterface
             ':title' => $title,
             ':body' => $body,
             ':owner_key_hash' => $ownerKeyHash,
+            ':author_is_generated' => $authorIsGenerated ? 1 : 0,
         ]);
         if ($stmt->rowCount() === 0) {
             return null;
@@ -254,15 +266,18 @@ final class SqlitePostRepository implements PostRepositoryInterface
                 parent_id INTEGER NULL,
                 thread_id INTEGER NULL,
                 owner_key_hash TEXT NULL,
-                like_count INTEGER NOT NULL DEFAULT 0
+                like_count INTEGER NOT NULL DEFAULT 0,
+                author_is_generated INTEGER NOT NULL DEFAULT 0
             )'
         );
         $this->ensureColumnExists('parent_id', 'INTEGER NULL');
         $this->ensureColumnExists('thread_id', 'INTEGER NULL');
         $this->ensureColumnExists('owner_key_hash', 'TEXT NULL');
         $this->ensureColumnExists('like_count', 'INTEGER NOT NULL DEFAULT 0');
+        $this->ensureColumnExists('author_is_generated', 'INTEGER NOT NULL DEFAULT 0');
         $this->pdo->exec('UPDATE posts SET thread_id = id WHERE thread_id IS NULL');
         $this->pdo->exec('UPDATE posts SET like_count = 0 WHERE like_count IS NULL');
+        $this->pdo->exec('UPDATE posts SET author_is_generated = 0 WHERE author_is_generated IS NULL');
     }
 
     /** @param list<array<string,mixed>> $rows
@@ -281,7 +296,8 @@ final class SqlitePostRepository implements PostRepositoryInterface
                 isset($row['parent_id']) ? ($row['parent_id'] !== null ? (int) $row['parent_id'] : null) : null,
                 isset($row['thread_id']) ? ($row['thread_id'] !== null ? (int) $row['thread_id'] : null) : null,
                 isset($row['owner_key_hash']) ? ($row['owner_key_hash'] !== null ? (string) $row['owner_key_hash'] : null) : null,
-                isset($row['like_count']) ? (int) $row['like_count'] : 0
+                isset($row['like_count']) ? (int) $row['like_count'] : 0,
+                isset($row['author_is_generated']) ? (int) $row['author_is_generated'] === 1 : false
             );
         }
         return $posts;

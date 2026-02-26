@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Post;
 use App\Repositories\PostRepositoryInterface;
+use App\Support\AuthorEmoji;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -67,6 +68,7 @@ final class PostService
     ): Post
     {
         [$author, $title, $body] = $this->validateFields($author, $title, $body);
+        [$author, $authorIsGenerated] = $this->normalizeAuthorForDisplay($author);
         $parentId = null;
         $threadId = null;
 
@@ -83,7 +85,7 @@ final class PostService
         }
 
         $ownerKeyHash = $ownerKey !== null && $ownerKey !== '' ? $this->hashOwnerKey($ownerKey) : null;
-        return $this->posts->create($author, $title, $body, $parentId, $threadId, $ownerKeyHash);
+        return $this->posts->create($author, $title, $body, $parentId, $threadId, $ownerKeyHash, $authorIsGenerated);
     }
 
     public function canModifyPost(int $id, string $ownerKey): bool
@@ -115,7 +117,8 @@ final class PostService
         }
 
         [$author, $title, $body] = $this->validateFields($author, $title, $body);
-        $post = $this->posts->update($id, $author, $title, $body, $this->hashOwnerKey($ownerKey));
+        [$author, $authorIsGenerated] = $this->normalizeAuthorForDisplay($author);
+        $post = $this->posts->update($id, $author, $title, $body, $this->hashOwnerKey($ownerKey), $authorIsGenerated);
         if ($post === null) {
             throw new RuntimeException('投稿の更新に失敗しました。');
         }
@@ -160,6 +163,27 @@ final class PostService
         }
 
         return [$author, $title, $body];
+    }
+
+    /** @return array{0:string,1:bool} */
+    private function normalizeAuthorForDisplay(string $author): array
+    {
+        $hashPos = mb_strpos($author, '#');
+        if ($hashPos === false) {
+            return [$author, false];
+        }
+
+        $displayName = trim(mb_substr($author, 0, $hashPos));
+        $secret = trim(mb_substr($author, $hashPos + 1));
+        if ($secret === '') {
+            return [$displayName, false];
+        }
+
+        $emoji = AuthorEmoji::fromSecret($secret);
+        if ($displayName === '') {
+            return [$emoji, true];
+        }
+        return [$displayName . ' ' . $emoji, true];
     }
 
     private function hashOwnerKey(string $ownerKey): string

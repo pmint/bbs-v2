@@ -15,7 +15,8 @@ final class Post
         public readonly ?int $parentId = null,
         public readonly ?int $threadId = null,
         public readonly ?string $ownerKeyHash = null,
-        public readonly int $likeCount = 0
+        public readonly int $likeCount = 0,
+        public readonly bool $authorIsGenerated = false
     ) {
     }
 }

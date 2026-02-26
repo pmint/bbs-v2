@@ -93,12 +93,24 @@ final class InMemoryPostRepository implements PostRepositoryInterface
         string $body,
         ?int $parentId = null,
         ?int $threadId = null,
-        ?string $ownerKeyHash = null
+        ?string $ownerKeyHash = null,
+        bool $authorIsGenerated = false
     ): Post
     {
         $id = $this->nextId;
         $threadId = $threadId ?? $id;
-        $post = new Post($id, $author, $title, $body, date('Y-m-d H:i:s'), $parentId, $threadId, $ownerKeyHash, 0);
+        $post = new Post(
+            $id,
+            $author,
+            $title,
+            $body,
+            date('Y-m-d H:i:s'),
+            $parentId,
+            $threadId,
+            $ownerKeyHash,
+            0,
+            $authorIsGenerated
+        );
         $this->posts[$this->nextId] = $post;
         $this->nextId++;
         return $post;
@@ -112,12 +124,13 @@ final class InMemoryPostRepository implements PostRepositoryInterface
         ?int $parentId = null,
         ?int $threadId = null,
         ?string $ownerKeyHash = null,
-        int $likeCount = 0
+        int $likeCount = 0,
+        bool $authorIsGenerated = false
     ): Post
     {
         $id = $this->nextId;
         $threadId = $threadId ?? $id;
-        $post = new Post($id, $author, $title, $body, $createdAt, $parentId, $threadId, $ownerKeyHash, $likeCount);
+        $post = new Post($id, $author, $title, $body, $createdAt, $parentId, $threadId, $ownerKeyHash, $likeCount, $authorIsGenerated);
         $this->posts[$this->nextId] = $post;
         $this->nextId++;
         return $post;
@@ -132,13 +145,31 @@ final class InMemoryPostRepository implements PostRepositoryInterface
         return hash_equals($post->ownerKeyHash, $ownerKeyHash);
     }
 
-    public function update(int $id, string $author, string $title, string $body, string $ownerKeyHash): ?Post
+    public function update(
+        int $id,
+        string $author,
+        string $title,
+        string $body,
+        string $ownerKeyHash,
+        bool $authorIsGenerated = false
+    ): ?Post
     {
         if (!isset($this->posts[$id]) || !$this->isOwnedBy($id, $ownerKeyHash)) {
             return null;
         }
         $post = $this->posts[$id];
-        $updated = new Post($id, $author, $title, $body, $post->createdAt, $post->parentId, $post->threadId, $post->ownerKeyHash, $post->likeCount);
+        $updated = new Post(
+            $id,
+            $author,
+            $title,
+            $body,
+            $post->createdAt,
+            $post->parentId,
+            $post->threadId,
+            $post->ownerKeyHash,
+            $post->likeCount,
+            $authorIsGenerated
+        );
         $this->posts[$id] = $updated;
         return $updated;
     }
@@ -173,7 +204,8 @@ final class InMemoryPostRepository implements PostRepositoryInterface
             $post->parentId,
             $post->threadId,
             $post->ownerKeyHash,
-            $count
+            $count,
+            $post->authorIsGenerated
         );
         $this->posts[$id] = $updated;
         return $updated;

@@ -75,6 +75,9 @@ $swUrl = ($basePath !== '' ? $basePath : '') . '/sw.js';
             color: #b7caca;
             margin-left: 0.8em;
         }
+        .author-generated {
+            color: #9cb8b8;
+        }
         .post-head .post-actions { margin-left: 0.7em; }
         .post-head .post-actions a { text-decoration: none; margin-right: 0.4em; }
         .card {
