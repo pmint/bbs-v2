@@ -24,8 +24,8 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
                         　返信先：#<?= (int) $post->parentId ?>
                     <?php endif; ?>
                     <span class="post-actions">
-                        <a href="<?= Url::to('/posts/create') ?>?reply_to=<?= (int) $post->id ?>" title="返信" target="_blank" rel="noopener noreferrer">■</a>
-                        <a href="<?= Url::to('/posts/thread/' . (int) ($post->threadId ?? $post->id)) ?>" title="スレッド表示" target="_blank" rel="noopener noreferrer">◆</a>
+                        <a href="<?= Url::to('/posts/create') ?>?reply_to=<?= (int) $post->id ?>" title="返信">■</a>
+                        <a href="<?= Url::to('/posts/thread/' . (int) ($post->threadId ?? $post->id)) ?>" title="スレッド表示">◆</a>
                     </span>
                 </span>
             </div>

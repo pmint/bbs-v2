@@ -91,8 +91,8 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
                     投稿者：<span class="<?= ($post->authorIsGenerated ? 'author-generated' : '') ?>"><?= htmlspecialchars($post->author, ENT_QUOTES, 'UTF-8') ?></span>
                     　投稿日時：<?= htmlspecialchars($post->createdAt, ENT_QUOTES, 'UTF-8') ?>
                     <span class="post-actions">
-                        <a href="<?= Url::to('/posts/create') ?>?reply_to=<?= (int) $post->id ?>" title="返信" target="_blank" rel="noopener noreferrer">■</a>
-                        <a href="<?= Url::to('/posts/thread/' . (int) ($post->threadId ?? $post->id)) ?>" title="スレッド表示" target="_blank" rel="noopener noreferrer">◆</a>
+                        <a href="<?= Url::to('/posts/create') ?>?reply_to=<?= (int) $post->id ?>" title="返信">■</a>
+                        <a href="<?= Url::to('/posts/thread/' . (int) ($post->threadId ?? $post->id)) ?>" title="スレッド表示">◆</a>
                     </span>
                 </span>
             </div>
@@ -105,7 +105,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
             </form>
             <?php if (($canManageMap[(int) $post->id] ?? false) === true): ?>
                 <div class="post-controls">
-                    <p><a href="<?= Url::to('/posts/' . (int) $post->id . '/edit') ?>" target="_blank" rel="noopener noreferrer">編集</a></p>
+                    <p><a href="<?= Url::to('/posts/' . (int) $post->id . '/edit') ?>">編集</a></p>
                     <form method="post" action="<?= Url::to('/posts/' . (int) $post->id . '/delete') ?>" onsubmit="return confirm('この投稿を削除しますか？');">
                         <input type="hidden" name="_token" value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                         <button type="submit">削除</button>
