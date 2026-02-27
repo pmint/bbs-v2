@@ -9,16 +9,16 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/logs'));
 ?>
 <h1>過去ログ検索</h1>
 
-<h2>日付別ログダウンロード</h2>
-<?php if (empty($dateList ?? [])): ?>
+<h2>月別ログダウンロード</h2>
+<?php if (empty($monthList ?? [])): ?>
     <p>ダウンロードできるログはありません。</p>
 <?php else: ?>
     <ul>
-        <?php foreach ($dateList as $item): ?>
+        <?php foreach ($monthList as $item): ?>
             <li>
-                <?= htmlspecialchars((string) $item['date'], ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars((string) $item['month'], ENT_QUOTES, 'UTF-8') ?>
                 (<?= (int) $item['count'] ?>件)
-                <a href="<?= Url::to('/logs/download') ?>?date=<?= urlencode((string) $item['date']) ?>">ダウンロード</a>
+                <a href="<?= Url::to('/logs/download') ?>?month=<?= urlencode((string) $item['month']) ?>">ダウンロード</a>
             </li>
         <?php endforeach; ?>
     </ul>

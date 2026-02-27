@@ -47,18 +47,43 @@ final class LogServiceTest extends TestCase
         $service->searchLogs('', '2026-99-99', null);
     }
 
-    public function testBuildDailyLogTextContainsTargetDatePosts(): void
+    public function testListDownloadableMonthsAggregatesCountsByMonth(): void
     {
         $repo = new InMemoryPostRepository();
         $repo->createWithDate('alice', 'foo', 'A', '2026-02-16 10:00:00');
         $repo->createWithDate('bob', 'bar', 'B', '2026-02-17 10:00:00');
+        $repo->createWithDate('carol', 'baz', 'C', '2026-01-17 10:00:00');
 
         $service = new LogService($repo);
-        $text = $service->buildDailyLogText('2026-02-16');
+        $months = $service->listDownloadableMonths();
 
-        self::assertStringContainsString('Date: 2026-02-16', $text);
+        self::assertSame('2026-02', $months[0]['month']);
+        self::assertSame(2, $months[0]['count']);
+        self::assertSame('2026-01', $months[1]['month']);
+        self::assertSame(1, $months[1]['count']);
+    }
+
+    public function testBuildMonthlyLogTextContainsTargetMonthPosts(): void
+    {
+        $repo = new InMemoryPostRepository();
+        $repo->createWithDate('alice', 'foo', 'A', '2026-02-16 10:00:00');
+        $repo->createWithDate('bob', 'bar', 'B', '2026-02-17 10:00:00');
+        $repo->createWithDate('carol', 'baz', 'C', '2026-01-18 10:00:00');
+
+        $service = new LogService($repo);
+        $text = $service->buildMonthlyLogText('2026-02');
+
+        self::assertStringContainsString('Month: 2026-02', $text);
         self::assertStringContainsString('alice', $text);
-        self::assertStringNotContainsString('bob', $text);
+        self::assertStringContainsString('bob', $text);
+        self::assertStringNotContainsString('carol', $text);
+    }
+
+    public function testBuildMonthlyLogTextRejectsInvalidMonth(): void
+    {
+        $service = new LogService(new InMemoryPostRepository());
+
+        $this->expectException(InvalidArgumentException::class);
+        $service->buildMonthlyLogText('2026-99');
     }
 }
-

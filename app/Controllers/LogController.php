@@ -38,7 +38,7 @@ final class LogController
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'results' => $results,
-            'dateList' => $this->service->listDownloadableDates(),
+            'monthList' => $this->service->listDownloadableMonths(),
             'likedMap' => $this->buildLikedMap($results),
             'csrfToken' => Csrf::token(),
         ]);
@@ -46,10 +46,10 @@ final class LogController
 
     public function download(): void
     {
-        $date = (string) ($_GET['date'] ?? '');
+        $month = (string) ($_GET['month'] ?? '');
 
         try {
-            $text = $this->service->buildDailyLogText($date);
+            $text = $this->service->buildMonthlyLogText($month);
         } catch (InvalidArgumentException $e) {
             http_response_code(400);
             header('Content-Type: text/plain; charset=UTF-8');
@@ -58,7 +58,7 @@ final class LogController
         }
 
         header('Content-Type: text/plain; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="posts-' . $date . '.txt"');
+        header('Content-Disposition: attachment; filename="posts-' . $month . '.txt"');
         echo $text;
     }
 

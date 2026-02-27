@@ -27,19 +27,37 @@ final class LogService
         return $this->posts->search($query, $fromDate, $toDate);
     }
 
-    /** @return list<array{date:string,count:int}> */
-    public function listDownloadableDates(): array
+    /** @return list<array{month:string,count:int}> */
+    public function listDownloadableMonths(): array
     {
-        return $this->posts->listDatesWithCounts();
+        $daily = $this->posts->listDatesWithCounts();
+        $monthly = [];
+        foreach ($daily as $item) {
+            $date = (string) ($item['date'] ?? '');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                continue;
+            }
+            $month = substr($date, 0, 7);
+            $monthly[$month] = ($monthly[$month] ?? 0) + (int) ($item['count'] ?? 0);
+        }
+        krsort($monthly, SORT_STRING);
+
+        $result = [];
+        foreach ($monthly as $month => $count) {
+            $result[] = ['month' => $month, 'count' => $count];
+        }
+        return $result;
     }
 
-    public function buildDailyLogText(string $date): string
+    public function buildMonthlyLogText(string $month): string
     {
-        $date = $this->requireValidDate($date);
-        $posts = $this->posts->findByDate($date);
+        $month = $this->requireValidMonth($month);
+        $fromDate = $month . '-01';
+        $toDate = date('Y-m-t', strtotime($fromDate));
+        $posts = $this->posts->search('', $fromDate, $toDate);
 
         $lines = [];
-        $lines[] = 'Date: ' . $date;
+        $lines[] = 'Month: ' . $month;
         $lines[] = 'Count: ' . count($posts);
         $lines[] = str_repeat('=', 60);
 
@@ -64,13 +82,13 @@ final class LogService
         return $date;
     }
 
-    private function requireValidDate(string $date): string
+    private function requireValidMonth(string $month): string
     {
-        $date = trim($date);
-        if (!$this->isValidDate($date)) {
-            throw new InvalidArgumentException('日付の形式が不正です。YYYY-MM-DD で指定してください。');
+        $month = trim($month);
+        if (!$this->isValidMonth($month)) {
+            throw new InvalidArgumentException('月の形式が不正です。YYYY-MM で指定してください。');
         }
-        return $date;
+        return $month;
     }
 
     private function isValidDate(string $date): bool
@@ -81,5 +99,13 @@ final class LogService
         [$y, $m, $d] = array_map('intval', explode('-', $date));
         return checkdate($m, $d, $y);
     }
-}
 
+    private function isValidMonth(string $month): bool
+    {
+        if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
+            return false;
+        }
+        [$y, $m] = array_map('intval', explode('-', $month));
+        return checkdate($m, 1, $y);
+    }
+}
