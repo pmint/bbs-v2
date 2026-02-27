@@ -7,6 +7,9 @@ $flashMessages = is_array($flashMessages ?? null) ? $flashMessages : [];
 $basePath = Url::basePath();
 $manifestUrl = ($basePath !== '' ? $basePath : '') . '/manifest.webmanifest';
 $swUrl = ($basePath !== '' ? $basePath : '') . '/sw.js';
+$siteTitle = 'あやしいわーるど＠あやしいわーるど';
+$pageTitle = trim((string) ($title ?? ''));
+$documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitle;
 ?>
 <!doctype html>
 <html lang="ja">
@@ -16,7 +19,7 @@ $swUrl = ($basePath !== '' ? $basePath : '') . '/sw.js';
     <meta name="theme-color" content="#004040">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="manifest" href="<?= htmlspecialchars($manifestUrl, ENT_QUOTES, 'UTF-8') ?>">
-    <title><?= htmlspecialchars($title ?? 'bbs-v2', ENT_QUOTES, 'UTF-8') ?></title>
+    <title><?= htmlspecialchars($documentTitle, ENT_QUOTES, 'UTF-8') ?></title>
     <style>
         html { scroll-behavior: smooth; }
         body {
