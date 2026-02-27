@@ -39,26 +39,22 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/logs'));
 </form>
 
 <h2>検索結果</h2>
-<?php if (empty($results ?? [])): ?>
-    <p>該当する投稿はありません。</p>
-<?php else: ?>
-    <?php foreach ($results as $post): ?>
-        <article class="card">
-            <div class="post-head">
-                <h2 class="post-title"><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8') ?></h2>
-                <span class="post-meta">
-                    投稿者：<span class="<?= ($post->authorIsGenerated ? 'author-generated' : '') ?>"><?= htmlspecialchars($post->author, ENT_QUOTES, 'UTF-8') ?></span>
-                    　投稿日時：<?= htmlspecialchars($post->createdAt, ENT_QUOTES, 'UTF-8') ?>
-                </span>
-            </div>
-            <pre><?= TextFormatter::linkifyUrls($post->body) ?></pre>
-            <form method="post" action="<?= Url::to('/posts/' . (int) $post->id . '/like') ?>">
-                <input type="hidden" name="_token" value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-                <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($redirectTo, ENT_QUOTES, 'UTF-8') ?>">
-                <?php $isLiked = (bool) ($likedMap[(int) $post->id] ?? false); ?>
-                <button type="submit" class="like-btn<?= ($isLiked ? ' is-liked' : '') ?>"><span class="like-icon"><?= ($isLiked ? '♥' : '♡') ?></span> <?= (int) ($post->likeCount ?? 0) ?></button>
-            </form>
-        </article>
-        <hr>
-    <?php endforeach; ?>
-<?php endif; ?>
+<?php foreach (($results ?? []) as $post): ?>
+    <article class="card">
+        <div class="post-head">
+            <h2 class="post-title"><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8') ?></h2>
+            <span class="post-meta">
+                投稿者：<span class="<?= ($post->authorIsGenerated ? 'author-generated' : '') ?>"><?= htmlspecialchars($post->author, ENT_QUOTES, 'UTF-8') ?></span>
+                　投稿日時：<?= htmlspecialchars($post->createdAt, ENT_QUOTES, 'UTF-8') ?>
+            </span>
+        </div>
+        <pre><?= TextFormatter::linkifyUrls($post->body) ?></pre>
+        <form method="post" action="<?= Url::to('/posts/' . (int) $post->id . '/like') ?>">
+            <input type="hidden" name="_token" value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($redirectTo, ENT_QUOTES, 'UTF-8') ?>">
+            <?php $isLiked = (bool) ($likedMap[(int) $post->id] ?? false); ?>
+            <button type="submit" class="like-btn<?= ($isLiked ? ' is-liked' : '') ?>"><span class="like-icon"><?= ($isLiked ? '♥' : '♡') ?></span> <?= (int) ($post->likeCount ?? 0) ?></button>
+        </form>
+    </article>
+    <hr>
+<?php endforeach; ?>

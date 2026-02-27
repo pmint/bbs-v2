@@ -12,6 +12,15 @@ interface PostRepositoryInterface
     public function all(): array;
 
     /** @return list<Post> */
+    public function searchInDisplayScope(
+        string $query = '',
+        ?string $fromDate = null,
+        ?string $toDate = null,
+        string $scopeStartDate = '',
+        int $latestLimit = 100
+    ): array;
+
+    /** @return list<Post> */
     public function search(string $query = '', ?string $fromDate = null, ?string $toDate = null): array;
 
     /** @return list<array{date:string,count:int}> */

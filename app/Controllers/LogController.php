@@ -23,10 +23,12 @@ final class LogController
         $errors = [];
         $results = [];
 
-        try {
-            $results = $this->service->searchLogs($query, $fromDate, $toDate);
-        } catch (InvalidArgumentException $e) {
-            $errors[] = $e->getMessage();
+        if ($this->hasSearchCriteria($query, $fromDate, $toDate)) {
+            try {
+                $results = $this->service->searchLogs($query, $fromDate, $toDate);
+            } catch (InvalidArgumentException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
 
         View::render('logs/index', [
@@ -85,5 +87,10 @@ final class LogController
             $map[$id] = isset($likedIds[$id]);
         }
         return $map;
+    }
+
+    private function hasSearchCriteria(string $query, string $fromDate, string $toDate): bool
+    {
+        return trim($query) !== '' || trim($fromDate) !== '' || trim($toDate) !== '';
     }
 }

@@ -12,6 +12,9 @@ use RuntimeException;
 
 final class PostService
 {
+    private const DISPLAY_LATEST_LIMIT = 100;
+    private const DISPLAY_MONTHS_BACK = 1;
+
     public function __construct(private PostRepositoryInterface $posts)
     {
     }
@@ -30,6 +33,21 @@ final class PostService
             return $this->posts->all();
         }
         return $this->posts->search($query, null, null);
+    }
+
+    /** @return list<Post> */
+    public function listPostsForBoard(string $query): array
+    {
+        $query = trim($query);
+        $scopeStartDate = date('Y-m-d', strtotime('-' . self::DISPLAY_MONTHS_BACK . ' month'));
+
+        return $this->posts->searchInDisplayScope(
+            $query,
+            null,
+            null,
+            $scopeStartDate,
+            self::DISPLAY_LATEST_LIMIT
+        );
     }
 
     /** @return list<Post> */

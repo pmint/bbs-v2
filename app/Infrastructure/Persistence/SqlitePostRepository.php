@@ -33,6 +33,47 @@ final class SqlitePostRepository implements PostRepositoryInterface
         return $this->mapRowsToPosts($rows);
     }
 
+    public function searchInDisplayScope(
+        string $query = '',
+        ?string $fromDate = null,
+        ?string $toDate = null,
+        string $scopeStartDate = '',
+        int $latestLimit = 100
+    ): array {
+        $sql = 'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated
+                FROM posts
+                WHERE (
+                    id IN (SELECT id FROM posts ORDER BY id DESC LIMIT :latest_limit)
+                    OR date(created_at) >= :scope_start_date
+                )';
+        $params = [];
+
+        $query = trim($query);
+        if ($query !== '') {
+            $sql .= ' AND (author LIKE :q OR title LIKE :q OR body LIKE :q)';
+            $params[':q'] = '%' . $query . '%';
+        }
+        if ($fromDate !== null && $fromDate !== '') {
+            $sql .= ' AND date(created_at) >= :from_date';
+            $params[':from_date'] = $fromDate;
+        }
+        if ($toDate !== null && $toDate !== '') {
+            $sql .= ' AND date(created_at) <= :to_date';
+            $params[':to_date'] = $toDate;
+        }
+        $sql .= ' ORDER BY id DESC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':latest_limit', max(1, $latestLimit), PDO::PARAM_INT);
+        $stmt->bindValue(':scope_start_date', $scopeStartDate === '' ? date('Y-m-d') : $scopeStartDate, PDO::PARAM_STR);
+        foreach ($params as $name => $value) {
+            $stmt->bindValue($name, $value, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->mapRowsToPosts($rows);
+    }
+
     public function search(string $query = '', ?string $fromDate = null, ?string $toDate = null): array
     {
         $sql = 'SELECT id, author, title, body, created_at, parent_id, thread_id, owner_key_hash, like_count, author_is_generated FROM posts WHERE 1=1';

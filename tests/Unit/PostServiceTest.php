@@ -169,6 +169,43 @@ final class PostServiceTest extends TestCase
         self::assertSame('new', $posts[1]->title);
     }
 
+    public function testListPostsForBoardUsesUnionOfLatestLimitAndRecentMonth(): void
+    {
+        $repo = new InMemoryPostRepository();
+        $service = new PostService($repo);
+
+        $repo->createWithDate('alice', 'recent-keep', 'A', date('Y-m-d H:i:s', strtotime('-10 days')));
+        $repo->createWithDate('bob', 'old-drop', 'B', date('Y-m-d H:i:s', strtotime('-90 days')));
+        for ($i = 1; $i <= 105; $i++) {
+            $repo->createWithDate('user' . $i, 'old-fill-' . $i, 'body', date('Y-m-d H:i:s', strtotime('-90 days')));
+        }
+
+        $posts = $service->listPostsForBoard('');
+        $titles = array_map(static fn($post): string => $post->title, $posts);
+
+        self::assertContains('recent-keep', $titles);
+        self::assertContains('old-fill-105', $titles);
+        self::assertNotContains('old-drop', $titles);
+    }
+
+    public function testListPostsForBoardQuerySearchesWithinScopedPostsOnly(): void
+    {
+        $repo = new InMemoryPostRepository();
+        $service = new PostService($repo);
+
+        $repo->createWithDate('alice', 'recent-keyword', 'A', date('Y-m-d H:i:s', strtotime('-10 days')));
+        $repo->createWithDate('bob', 'stale-keyword', 'B', date('Y-m-d H:i:s', strtotime('-120 days')));
+        for ($i = 1; $i <= 105; $i++) {
+            $repo->createWithDate('user' . $i, 'old-fill-' . $i, 'body', date('Y-m-d H:i:s', strtotime('-120 days')));
+        }
+
+        $posts = $service->listPostsForBoard('keyword');
+        $titles = array_map(static fn($post): string => $post->title, $posts);
+
+        self::assertContains('recent-keyword', $titles);
+        self::assertNotContains('stale-keyword', $titles);
+    }
+
     public function testAuthorWithSecretIsStoredAsNameAndTwoEmoji(): void
     {
         $service = new PostService(new InMemoryPostRepository());

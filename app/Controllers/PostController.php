@@ -36,7 +36,7 @@ final class PostController
         $hasNgWords = $ngWords !== [];
         $isFiltering = trim($filterQuery) !== '';
         $isNarrowing = $isFiltering || $hasNgWords;
-        $posts = $this->service->listPostsByQuery($filterQuery);
+        $posts = $this->service->listPostsForBoard($filterQuery);
         $hiddenByNgCount = 0;
         if ($hasNgWords) {
             [$posts, $hiddenByNgCount] = $this->applyNgWordFilter($posts, $ngWords);

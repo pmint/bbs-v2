@@ -20,6 +20,50 @@ final class InMemoryPostRepository implements PostRepositoryInterface
         return $posts;
     }
 
+    public function searchInDisplayScope(
+        string $query = '',
+        ?string $fromDate = null,
+        ?string $toDate = null,
+        string $scopeStartDate = '',
+        int $latestLimit = 100
+    ): array {
+        $all = $this->all();
+        $latestLimit = max(1, $latestLimit);
+        $scopeStartDate = $scopeStartDate === '' ? date('Y-m-d') : $scopeStartDate;
+
+        $latestIds = [];
+        foreach (array_slice($all, 0, $latestLimit) as $post) {
+            if ($post->id !== null) {
+                $latestIds[(int) $post->id] = true;
+            }
+        }
+
+        $result = [];
+        foreach ($all as $post) {
+            $id = (int) ($post->id ?? 0);
+            $date = substr($post->createdAt, 0, 10);
+
+            $inScope = isset($latestIds[$id]) || $date >= $scopeStartDate;
+            if (!$inScope) {
+                continue;
+            }
+            if ($fromDate !== null && $fromDate !== '' && $date < $fromDate) {
+                continue;
+            }
+            if ($toDate !== null && $toDate !== '' && $date > $toDate) {
+                continue;
+            }
+            if ($query !== '') {
+                $haystack = $post->author . ' ' . $post->title . ' ' . $post->body;
+                if (mb_stripos($haystack, $query) === false) {
+                    continue;
+                }
+            }
+            $result[] = $post;
+        }
+        return $result;
+    }
+
     public function search(string $query = '', ?string $fromDate = null, ?string $toDate = null): array
     {
         $result = [];
