@@ -46,6 +46,10 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/logs'));
             <span class="post-meta">
                 投稿者：<span class="<?= ($post->authorIsGenerated ? 'author-generated' : '') ?>"><?= htmlspecialchars($post->author, ENT_QUOTES, 'UTF-8') ?></span>
                 　投稿日時：<?= htmlspecialchars($post->createdAt, ENT_QUOTES, 'UTF-8') ?>
+                <span class="post-actions">
+                    <a href="<?= Url::to('/posts/create') ?>?reply_to=<?= (int) $post->id ?>" title="返信">■</a>
+                    <a href="<?= Url::to('/posts/thread/' . (int) ($post->threadId ?? $post->id)) ?>" title="スレッド表示">◆</a>
+                </span>
             </span>
         </div>
         <pre><?= TextFormatter::linkifyUrls($post->body) ?></pre>
