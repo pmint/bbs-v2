@@ -93,7 +93,7 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
         .post-head .post-actions { margin-left: 0.7em; }
         .post-head .post-actions a { text-decoration: none; margin-right: 0.4em; }
         .card {
-            padding: 8px 4px 12px;
+            padding: 8px 0 12px;
             margin: 0;
         }
         .meta { font-size: 0.92rem; color: #efefef; }
