@@ -31,9 +31,11 @@ $feedbackPosts = is_array($feedbackPosts ?? null) ? $feedbackPosts : [];
 <?php if (empty($updates)): ?>
     <p>更新履歴はまだありません。</p>
 <?php else: ?>
-    <ul>
+    <dl>
         <?php foreach ($updates as $item): ?>
-            <li><?= htmlspecialchars((string) ($item['date'] ?? ''), ENT_QUOTES, 'UTF-8') ?> - <?= htmlspecialchars((string) ($item['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></li>
+            <dt><?= htmlspecialchars((string) ($item['date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></dt>
+            <dd><?= htmlspecialchars((string) ($item['change'] ?? ''), ENT_QUOTES, 'UTF-8') ?></dd>
+            <dd><?= htmlspecialchars((string) ($item['usage'] ?? ''), ENT_QUOTES, 'UTF-8') ?></dd>
         <?php endforeach; ?>
-    </ul>
+    </dl>
 <?php endif; ?>
