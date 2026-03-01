@@ -95,6 +95,9 @@ final class PostController
                 exit;
             }
         }
+        if ((!isset($old['body']) || trim((string) $old['body']) === '') && $replyToPost === null) {
+            $old['body'] = $this->buildFilterPrefillBody();
+        }
 
         View::render('posts/create', [
             'title' => '新規投稿',
@@ -292,6 +295,15 @@ final class PostController
         return implode(PHP_EOL, $quoted);
     }
 
+    private function buildFilterPrefillBody(): string
+    {
+        $query = trim((string) ($_SESSION['post_filter_query'] ?? ''));
+        if ($query === '') {
+            return '';
+        }
+        return PHP_EOL . ' ' . $query . ' ' . PHP_EOL;
+    }
+
     private function getOrCreateOwnerKey(): string
     {
         $sessionKey = $_SESSION['owner_key'] ?? null;
@@ -425,7 +437,7 @@ final class PostController
             $items[] = [
                 'replyId' => $replyId,
                 'parentId' => $parentId,
-                'parentTitle' => (string) ($titlesById[$parentId] ?? '（題名なし）'),
+                'parentTitle' => (string) ($titlesById[$parentId] ?? '（無題）'),
                 'replyAuthor' => $post->author,
                 'replyCreatedAt' => $post->createdAt,
             ];
@@ -524,7 +536,7 @@ final class PostController
                 continue;
             }
 
-            $parentTitle = (string) ($titlesById[$parentId] ?? '（題名なし）');
+            $parentTitle = (string) ($titlesById[$parentId] ?? '（無題）');
             $notices[] = 'あなたの投稿「' . $parentTitle . '」に返信がありました。';
             $notifiedIds[$replyId] = true;
         }

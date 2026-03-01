@@ -31,7 +31,7 @@ final class HashtagTest extends TestCase
             $posts[] = new Post(
                 $i,
                 'a',
-                't',
+                '#title' . $i,
                 '#tag' . $i . ' #common',
                 '2026-01-01 00:00:00'
             );
@@ -43,5 +43,17 @@ final class HashtagTest extends TestCase
         self::assertSame('common', $result[0]['tag']);
         self::assertSame(20, $result[0]['count']);
     }
-}
 
+    public function testBuildTagCountsIncludesHashtagsFromTitleAndBody(): void
+    {
+        $posts = [
+            new Post(1, 'a', '#topic', 'body text', '2026-01-01 00:00:00'),
+            new Post(2, 'b', 'title', '#topic', '2026-01-01 00:00:00'),
+        ];
+
+        $result = Hashtag::buildTagCounts($posts, 10);
+
+        self::assertSame('topic', $result[0]['tag']);
+        self::assertSame(2, $result[0]['count']);
+    }
+}

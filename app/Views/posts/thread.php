@@ -16,7 +16,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
     <?php foreach ($posts as $post): ?>
         <article class="card">
             <div class="post-head">
-                <h2 class="post-title"><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8') ?></h2>
+                <h2 class="post-title"><?= TextFormatter::linkifyHashtags($post->title) ?></h2>
                 <span class="post-meta">
                     投稿者：<span class="<?= ($post->authorIsGenerated ? 'author-generated' : '') ?>"><?= htmlspecialchars($post->author, ENT_QUOTES, 'UTF-8') ?></span>
                     　投稿日時：<?= htmlspecialchars($post->createdAt, ENT_QUOTES, 'UTF-8') ?>

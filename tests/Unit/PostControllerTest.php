@@ -72,4 +72,32 @@ final class PostControllerTest extends TestCase
 
         self::assertArrayNotHasKey('read_reply_ids', $_SESSION);
     }
+
+    public function testCreatePrefillsBodyWithFilterKeywordWhenFilteringIsActive(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['post_filter_query'] = '#意見';
+
+        ob_start();
+        $controller->create();
+        $html = (string) ob_get_clean();
+        $decoded = str_replace("\r\n", "\n", html_entity_decode($html, ENT_QUOTES, 'UTF-8'));
+
+        self::assertStringContainsString('<textarea id="body" name="body" rows="8">', $html);
+        self::assertStringContainsString("\n #意見 \n</textarea>", $decoded);
+    }
+
+    public function testIndexRendersHashtagLinksInPostTitle(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $service->createPost('alice', '#要望 タイトル', '本文');
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('?q=%23%E8%A6%81%E6%9C%9B', $html);
+    }
 }

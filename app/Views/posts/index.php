@@ -23,7 +23,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
         <?php foreach ($unreadReplyItems as $item): ?>
             <?php $replyId = (int) ($item['replyId'] ?? 0); ?>
             <?php if ($replyId <= 0) { continue; } ?>
-            <a href="<?= Url::to('/posts') ?>?mark_read_reply_id=<?= $replyId ?>#post-<?= $replyId ?>">「<?= htmlspecialchars((string) ($item['parentTitle'] ?? '（題名なし）'), ENT_QUOTES, 'UTF-8') ?>」への返信</a>
+            <a href="<?= Url::to('/posts') ?>?mark_read_reply_id=<?= $replyId ?>#post-<?= $replyId ?>">「<?= htmlspecialchars((string) ($item['parentTitle'] ?? '（無題）'), ENT_QUOTES, 'UTF-8') ?>」への返信</a>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
@@ -86,7 +86,7 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
     <?php foreach ($posts as $post): ?>
         <article class="card" id="post-<?= (int) $post->id ?>">
             <div class="post-head">
-                <h2 class="post-title"><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8') ?></h2>
+                <h2 class="post-title"><?= TextFormatter::linkifyHashtags($post->title) ?></h2>
                 <span class="post-meta">
                     投稿者：<span class="<?= ($post->authorIsGenerated ? 'author-generated' : '') ?>"><?= htmlspecialchars($post->author, ENT_QUOTES, 'UTF-8') ?></span>
                     　投稿日時：<?= htmlspecialchars($post->createdAt, ENT_QUOTES, 'UTF-8') ?>

@@ -67,7 +67,16 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             font-weight: bold;
             color: #fffffe;
         }
-        .post-title { display: inline; }
+        .post-title {
+            display: inline;
+            font-size: 0.92rem;
+            font-weight: normal;
+            color: #b7caca;
+        }
+        .post-title a:link,
+        .post-title a:visited {
+            color: #b7caca;
+        }
         .post-head {
             margin: 0 0 8px;
             white-space: nowrap;

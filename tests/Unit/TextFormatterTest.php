@@ -50,4 +50,15 @@ final class TextFormatterTest extends TestCase
         self::assertStringContainsString('<a href="https://example.com/#fragment"', $actual);
         self::assertStringContainsString('?q=%23topic', $actual);
     }
+
+    public function testLinkifyHashtagsEscapesHtmlAndCreatesFilterLinks(): void
+    {
+        $input = '<b>#topic</b> and ＃要望';
+
+        $actual = TextFormatter::linkifyHashtags($input);
+
+        self::assertStringContainsString('&lt;b&gt;', $actual);
+        self::assertStringContainsString('?q=%23topic', $actual);
+        self::assertStringContainsString('?q=%23%E8%A6%81%E6%9C%9B', $actual);
+    }
 }

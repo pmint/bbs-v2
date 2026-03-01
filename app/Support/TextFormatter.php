@@ -6,6 +6,12 @@ namespace App\Support;
 
 final class TextFormatter
 {
+    public static function linkifyHashtags(string $text): string
+    {
+        $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        return self::linkifyHashtagsOutsideAnchors($escaped);
+    }
+
     public static function linkifyUrls(string $text): string
     {
         $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');

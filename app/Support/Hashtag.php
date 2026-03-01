@@ -42,7 +42,7 @@ final class Hashtag
     {
         $counts = [];
         foreach ($posts as $post) {
-            $tags = self::extractTags($post->body);
+            $tags = self::extractTags($post->title . "\n" . $post->body);
             foreach ($tags as $tag) {
                 $counts[$tag] = ($counts[$tag] ?? 0) + 1;
             }
