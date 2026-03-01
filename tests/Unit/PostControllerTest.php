@@ -73,7 +73,7 @@ final class PostControllerTest extends TestCase
         self::assertArrayNotHasKey('read_reply_ids', $_SESSION);
     }
 
-    public function testCreatePrefillsBodyWithFilterKeywordWhenFilteringIsActive(): void
+    public function testCreatePrefillsTitleWithFilterKeywordWhenFilteringIsActive(): void
     {
         $service = new PostService(new InMemoryPostRepository());
         $controller = new PostController($service);
@@ -82,10 +82,10 @@ final class PostControllerTest extends TestCase
         ob_start();
         $controller->create();
         $html = (string) ob_get_clean();
-        $decoded = str_replace("\r\n", "\n", html_entity_decode($html, ENT_QUOTES, 'UTF-8'));
 
-        self::assertStringContainsString('<textarea id="body" name="body" rows="8">', $html);
-        self::assertStringContainsString("\n #意見 \n</textarea>", $decoded);
+        self::assertStringContainsString('id="title"', $html);
+        self::assertStringContainsString('value="#意見 "', $html);
+        self::assertStringContainsString('<textarea id="body" name="body" rows="8"></textarea>', $html);
     }
 
     public function testIndexRendersHashtagLinksInPostTitle(): void

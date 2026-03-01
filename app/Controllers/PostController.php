@@ -95,8 +95,8 @@ final class PostController
                 exit;
             }
         }
-        if ((!isset($old['body']) || trim((string) $old['body']) === '') && $replyToPost === null) {
-            $old['body'] = $this->buildFilterPrefillBody();
+        if ((!isset($old['title']) || trim((string) $old['title']) === '') && $replyToPost === null) {
+            $old['title'] = $this->buildFilterPrefillTitle();
         }
 
         View::render('posts/create', [
@@ -295,13 +295,13 @@ final class PostController
         return implode(PHP_EOL, $quoted);
     }
 
-    private function buildFilterPrefillBody(): string
+    private function buildFilterPrefillTitle(): string
     {
         $query = trim((string) ($_SESSION['post_filter_query'] ?? ''));
         if ($query === '') {
             return '';
         }
-        return PHP_EOL . ' ' . $query . ' ' . PHP_EOL;
+        return $query . ' ';
     }
 
     private function getOrCreateOwnerKey(): string
