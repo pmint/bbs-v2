@@ -13,11 +13,6 @@ $feedbackPosts = is_array($feedbackPosts ?? null) ? $feedbackPosts : [];
 <p>ご意見・ご要望は、<a href="<?= Url::to('/posts') ?>?q=<?= urlencode('#意見') ?>">#意見</a> / <a href="<?= Url::to('/posts') ?>?q=<?= urlencode('#要望') ?>">#要望</a> タグを付けて投稿をお願いします。</p>
 <p><a href="<?= Url::to('/posts/create') ?>">書き込みページへ</a></p>
 
-<h2>最新のお知らせ</h2>
-<p>投稿者名に <code>#</code> を使った絵文字表示に対応しました。</p>
-<p>例: <code>しば#ひみつ</code> のように入力すると、表示は「しば + 絵文字2個」になります。</p>
-<p><code>#</code> 以降は保存されず、見た目だけ絵文字に変換されます。</p>
-
 <h2>意見・要望ピックアップ</h2>
 <?php if (empty($feedbackPosts)): ?>
     <p>まだ #意見 / #要望 付きの投稿はありません。</p>
