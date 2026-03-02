@@ -32,7 +32,7 @@ Default config is `config/app.php`.
 For local-only overrides, copy and edit:
 
 ```bash
-copy config\\app.local.php.example config\\app.local.php
+cp config/app.local.php.example config/app.local.php
 ```
 
 `config/app.local.php` is ignored by git.
@@ -67,7 +67,7 @@ composer test
 Keep this note even in preview environments:
 
 ```bash
-copy storage\\data\\bbs.sqlite storage\\data\\bbs.sqlite.bak
+cp storage/data/bbs.sqlite storage/data/bbs.sqlite.bak
 ```
 
 Before deployments that replace files, ensure `storage/data/bbs.sqlite` is preserved.

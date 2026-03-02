@@ -6,6 +6,7 @@ namespace Tests\Unit;
 
 use App\Controllers\PostController;
 use App\Services\PostService;
+use App\Support\Url;
 use PHPUnit\Framework\TestCase;
 use Tests\Fakes\InMemoryPostRepository;
 
@@ -99,5 +100,27 @@ final class PostControllerTest extends TestCase
         $html = (string) ob_get_clean();
 
         self::assertStringContainsString('?q=%23%E8%A6%81%E6%9C%9B', $html);
+    }
+
+    public function testSanitizeRedirectPathRejectsSchemeRelativeUrl(): void
+    {
+        $controller = new PostController(new PostService(new InMemoryPostRepository()));
+        $method = new \ReflectionMethod($controller, 'sanitizeRedirectPath');
+        $method->setAccessible(true);
+
+        $actual = $method->invoke($controller, '//evil.example/phish');
+
+        self::assertSame(Url::to('/posts'), $actual);
+    }
+
+    public function testSanitizeRedirectPathKeepsLocalPathWithQueryAndFragment(): void
+    {
+        $controller = new PostController(new PostService(new InMemoryPostRepository()));
+        $method = new \ReflectionMethod($controller, 'sanitizeRedirectPath');
+        $method->setAccessible(true);
+
+        $actual = $method->invoke($controller, '/posts/thread/1?from=logs#post-2');
+
+        self::assertSame('/posts/thread/1?from=logs#post-2', $actual);
     }
 }

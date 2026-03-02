@@ -23,7 +23,7 @@ final class PostController
     {
         $ownerKey = $this->getOrCreateOwnerKey();
         $ownerKeyHash = hash('sha256', $ownerKey);
-        $allPosts = $this->service->listPosts();
+        $allPosts = $this->service->listPostsForBoard('');
         $markReadReplyId = $this->resolveMarkReadReplyId();
         if ($markReadReplyId !== null) {
             $this->markReplyAsRead($allPosts, $ownerKeyHash, $markReadReplyId);
@@ -361,10 +361,32 @@ final class PostController
 
     private function sanitizeRedirectPath(string $redirectTo): string
     {
-        if ($redirectTo !== '' && str_starts_with($redirectTo, '/')) {
-            return $redirectTo;
+        if ($redirectTo === '') {
+            return Url::to('/posts');
         }
-        return Url::to('/posts');
+
+        $parts = parse_url($redirectTo);
+        if ($parts === false) {
+            return Url::to('/posts');
+        }
+        if (
+            isset($parts['scheme']) ||
+            isset($parts['host']) ||
+            isset($parts['user']) ||
+            isset($parts['pass']) ||
+            isset($parts['port'])
+        ) {
+            return Url::to('/posts');
+        }
+
+        $path = (string) ($parts['path'] ?? '');
+        if ($path === '' || !str_starts_with($path, '/') || str_starts_with($path, '//')) {
+            return Url::to('/posts');
+        }
+
+        $query = isset($parts['query']) ? '?' . $parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+        return $path . $query . $fragment;
     }
 
     private function resolveMarkReadReplyId(): ?int
