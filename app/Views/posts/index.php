@@ -5,6 +5,8 @@ use App\Support\TextFormatter;
 use App\Support\Url;
 
 $canManageMap = is_array($canManageMap ?? null) ? $canManageMap : [];
+$myPostIds = is_array($myPostIds ?? null) ? $myPostIds : [];
+$replyToMyPostIds = is_array($replyToMyPostIds ?? null) ? $replyToMyPostIds : [];
 $likedMap = is_array($likedMap ?? null) ? $likedMap : [];
 $tagList = is_array($tagList ?? null) ? $tagList : [];
 $unreadReplyItems = is_array($unreadReplyItems ?? null) ? $unreadReplyItems : [];
@@ -84,7 +86,16 @@ $redirectTo = (string) ($_SERVER['REQUEST_URI'] ?? Url::to('/posts'));
     <?php endif; ?>
 <?php else: ?>
     <?php foreach ($posts as $post): ?>
-        <article class="card" id="post-<?= (int) $post->id ?>">
+        <?php
+            $postId = (int) $post->id;
+            $cardClass = 'card';
+            if (($myPostIds[$postId] ?? false) === true) {
+                $cardClass .= ' is-own';
+            } elseif (($replyToMyPostIds[$postId] ?? false) === true) {
+                $cardClass .= ' is-reply-to-own';
+            }
+        ?>
+        <article class="<?= $cardClass ?>" id="post-<?= $postId ?>">
             <div class="post-head">
                 <h2 class="post-title"><?= TextFormatter::linkifyHashtags($post->title) ?></h2>
                 <span class="post-meta">

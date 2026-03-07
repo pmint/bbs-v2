@@ -102,6 +102,41 @@ final class PostControllerTest extends TestCase
         self::assertStringContainsString('?q=%23%E8%A6%81%E6%9C%9B', $html);
     }
 
+    public function testIndexRightAlignsOwnPostAndReplyToOwnPost(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['owner_key'] = 'owner-key';
+
+        $myPost = $service->createPostWithOwnerKey('me', 'my title', 'my body', 'owner-key');
+        $reply = $service->createPost('other', 'reply title', 'reply body', (int) $myPost->id);
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('id="post-' . (int) $myPost->id . '"', $html);
+        self::assertStringContainsString('class="card is-own" id="post-' . (int) $myPost->id . '"', $html);
+        self::assertStringContainsString('class="card is-reply-to-own" id="post-' . (int) $reply->id . '"', $html);
+    }
+
+    public function testThreadRightAlignsOwnPostAndReplyToOwnPost(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['owner_key'] = 'owner-key';
+
+        $myPost = $service->createPostWithOwnerKey('me', 'thread root', 'root body', 'owner-key');
+        $reply = $service->createPost('other', 'thread reply', 'reply body', (int) $myPost->id);
+
+        ob_start();
+        $controller->thread(['id' => (string) $myPost->id]);
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('class="card is-own" id="post-' . (int) $myPost->id . '"', $html);
+        self::assertStringContainsString('class="card is-reply-to-own" id="post-' . (int) $reply->id . '"', $html);
+    }
+
     public function testSanitizeRedirectPathRejectsSchemeRelativeUrl(): void
     {
         $controller = new PostController(new PostService(new InMemoryPostRepository()));
