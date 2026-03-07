@@ -37,6 +37,8 @@ final class PostController
         $isFiltering = trim($filterQuery) !== '';
         $isNarrowing = $isFiltering || $hasNgWords;
         $posts = $this->service->listPostsForBoard($filterQuery);
+        $myPostIds = $this->buildMyPostIds($allPosts, $ownerKeyHash);
+        $replyToMyPostIds = $this->buildReplyToMyPostIds($allPosts, $ownerKeyHash, $myPostIds);
         $hiddenByNgCount = 0;
         if ($hasNgWords) {
             [$posts, $hiddenByNgCount] = $this->applyNgWordFilter($posts, $ngWords);
@@ -68,6 +70,8 @@ final class PostController
             'unreadReplyItems' => $unreadReplyItems,
             'unreadReplyCount' => count($unreadReplyItems),
             'canManageMap' => $canManageMap,
+            'myPostIds' => $myPostIds,
+            'replyToMyPostIds' => $replyToMyPostIds,
             'likedMap' => $likedMap,
             'old' => $_SESSION['old'] ?? [],
             'csrfToken' => Csrf::token(),
@@ -233,10 +237,14 @@ final class PostController
 
         try {
             $posts = $this->service->listThreadPosts($threadId);
+            $ownerKeyHash = hash('sha256', $this->getOrCreateOwnerKey());
+            $myPostIds = $this->buildMyPostIds($posts, $ownerKeyHash);
             View::render('posts/thread', [
                 'title' => 'スレッド表示',
                 'threadId' => $threadId,
                 'posts' => $posts,
+                'myPostIds' => $myPostIds,
+                'replyToMyPostIds' => $this->buildReplyToMyPostIds($posts, $ownerKeyHash, $myPostIds),
                 'likedMap' => $this->buildLikedMap($posts),
                 'csrfToken' => Csrf::token(),
             ]);
@@ -483,6 +491,30 @@ final class PostController
             }
         }
         return $myPostIds;
+    }
+
+    /**
+     * @param list<Post> $allPosts
+     * @param array<int,bool> $myPostIds
+     * @return array<int,bool>
+     */
+    private function buildReplyToMyPostIds(array $allPosts, string $ownerKeyHash, array $myPostIds): array
+    {
+        $replyToMyPostIds = [];
+        foreach ($allPosts as $post) {
+            if ($post->id === null || $post->parentId === null) {
+                continue;
+            }
+            if ($post->ownerKeyHash === $ownerKeyHash) {
+                continue;
+            }
+            $parentId = (int) $post->parentId;
+            if (!isset($myPostIds[$parentId])) {
+                continue;
+            }
+            $replyToMyPostIds[(int) $post->id] = true;
+        }
+        return $replyToMyPostIds;
     }
 
     /** @return array<int,bool> */

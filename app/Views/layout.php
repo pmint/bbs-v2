@@ -96,6 +96,37 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             padding: 8px 0 12px;
             margin: 0;
         }
+        .card.is-own {
+            margin-left: auto;
+            max-width: min(100%, 720px);
+            text-align: right;
+        }
+        .card.is-reply-to-own {
+            margin-left: auto;
+            max-width: min(100%, 820px);
+            text-align: right;
+        }
+        .card.is-own .post-head,
+        .card.is-reply-to-own .post-head {
+            justify-content: flex-end;
+        }
+        .card.is-own .post-meta,
+        .card.is-reply-to-own .post-meta {
+            margin-left: 0;
+            margin-right: 0.8em;
+        }
+        .card.is-own .post-head .post-actions a,
+        .card.is-reply-to-own .post-head .post-actions a {
+            margin-right: 0;
+            margin-left: 0.4em;
+        }
+        .card.is-own .post-controls p,
+        .card.is-own .post-controls form,
+        .card.is-reply-to-own .post-controls p,
+        .card.is-reply-to-own .post-controls form {
+            margin-right: 0;
+            margin-left: 10px;
+        }
         .meta { font-size: 0.92rem; color: #efefef; }
         .error { color: #ff6666; margin: 8px 0; font-weight: bold; }
         .success { color: #9ff5c4; margin: 8px 0; font-weight: bold; }
