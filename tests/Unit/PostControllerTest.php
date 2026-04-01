@@ -141,7 +141,6 @@ final class PostControllerTest extends TestCase
     {
         $controller = new PostController(new PostService(new InMemoryPostRepository()));
         $method = new \ReflectionMethod($controller, 'sanitizeRedirectPath');
-        $method->setAccessible(true);
 
         $actual = $method->invoke($controller, '//evil.example/phish');
 
@@ -152,7 +151,6 @@ final class PostControllerTest extends TestCase
     {
         $controller = new PostController(new PostService(new InMemoryPostRepository()));
         $method = new \ReflectionMethod($controller, 'sanitizeRedirectPath');
-        $method->setAccessible(true);
 
         $actual = $method->invoke($controller, '/posts/thread/1?from=logs#post-2');
 
