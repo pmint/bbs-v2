@@ -48,14 +48,8 @@ final class PostController
             [$recentPostsForTags, ] = $this->applyNgWordFilter($recentPostsForTags, $ngWords);
         }
         $tagList = Hashtag::buildTagCounts($recentPostsForTags, 15);
-        $canManageMap = [];
+        $canManageMap = $this->buildCanManageMap($posts, $ownerKeyHash);
         $likedMap = $this->buildLikedMap($posts);
-        foreach ($posts as $post) {
-            if ($post->id === null) {
-                continue;
-            }
-            $canManageMap[(int) $post->id] = $this->service->canModifyPost((int) $post->id, $ownerKey);
-        }
 
         View::render('posts/index', [
             'title' => '投稿一覧',
@@ -339,6 +333,22 @@ final class PostController
             $likedMap[$id] = isset($likedIds[$id]);
         }
         return $likedMap;
+    }
+
+    /**
+     * @param list<Post> $posts
+     * @return array<int,bool>
+     */
+    private function buildCanManageMap(array $posts, string $ownerKeyHash): array
+    {
+        $canManageMap = [];
+        foreach ($posts as $post) {
+            if ($post->id === null) {
+                continue;
+            }
+            $canManageMap[(int) $post->id] = $post->ownerKeyHash !== null && $post->ownerKeyHash === $ownerKeyHash;
+        }
+        return $canManageMap;
     }
 
     /** @return array<int,bool> */
