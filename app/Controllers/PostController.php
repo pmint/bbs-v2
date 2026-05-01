@@ -29,7 +29,7 @@ final class PostController
             $this->markReplyAsRead($allPosts, $ownerKeyHash, $markReadReplyId);
         }
         $unreadReplyItems = $this->buildUnreadReplyItems($allPosts, $ownerKeyHash);
-        $replyNotices = $this->buildReplyNotices($allPosts, $ownerKeyHash);
+        $replyNotices = $this->buildReplyNotices($unreadReplyItems);
         $filterQuery = $this->resolvePostFilterQuery();
         $ngWordsRaw = $this->resolvePostNgWordsRaw();
         $ngWords = $this->parseNgWords($ngWordsRaw);
@@ -554,62 +554,62 @@ final class PostController
     }
 
     /**
-     * @param list<Post> $allPosts
+     * @param list<array{replyId:int,parentId:int,parentTitle:string,replyAuthor:string,replyCreatedAt:string}> $unreadReplyItems
      * @return list<string>
      */
-    private function buildReplyNotices(array $allPosts, string $ownerKeyHash): array
+    private function buildReplyNotices(array $unreadReplyItems): array
     {
-        $myPostIds = [];
-        $titlesById = [];
-        foreach ($allPosts as $post) {
-            if ($post->id === null) {
-                continue;
-            }
-            $titlesById[(int) $post->id] = $post->title;
-            if ($post->ownerKeyHash === $ownerKeyHash) {
-                $myPostIds[(int) $post->id] = true;
-            }
-        }
-
-        $notifiedIdsRaw = $_SESSION['notified_reply_ids'] ?? [];
-        $notifiedIds = [];
-        if (is_array($notifiedIdsRaw)) {
-            foreach ($notifiedIdsRaw as $id) {
-                $id = (int) $id;
-                if ($id > 0) {
-                    $notifiedIds[$id] = true;
-                }
-            }
-        }
-
-        $notices = [];
-        foreach ($allPosts as $post) {
-            if ($post->id === null || $post->parentId === null) {
-                continue;
-            }
-            $replyId = (int) $post->id;
-            $parentId = (int) $post->parentId;
-            if (!isset($myPostIds[$parentId])) {
+        $notifiedIds = $this->getNotifiedReplyIdsMap();
+        $newUnreadCount = 0;
+        foreach ($unreadReplyItems as $item) {
+            $replyId = (int) ($item['replyId'] ?? 0);
+            if ($replyId <= 0) {
                 continue;
             }
             if (isset($notifiedIds[$replyId])) {
                 continue;
             }
-            if ($post->ownerKeyHash === $ownerKeyHash) {
-                $notifiedIds[$replyId] = true;
-                continue;
-            }
-
-            $parentTitle = (string) ($titlesById[$parentId] ?? '（無題）');
-            $notices[] = 'あなたの投稿「' . $parentTitle . '」に返信がありました。';
             $notifiedIds[$replyId] = true;
+            $newUnreadCount++;
         }
 
-        $stored = array_keys($notifiedIds);
-        rsort($stored, SORT_NUMERIC);
-        $_SESSION['notified_reply_ids'] = array_slice($stored, 0, 500);
+        if ($newUnreadCount === 0) {
+            return [];
+        }
 
-        return $notices;
+        $this->saveNotifiedReplyIdsMap($notifiedIds);
+
+        if ($newUnreadCount === 1) {
+            return ['未読返信があります。'];
+        }
+
+        return ['未読返信が' . $newUnreadCount . '件あります。'];
+    }
+
+    /** @return array<int,bool> */
+    private function getNotifiedReplyIdsMap(): array
+    {
+        $raw = $_SESSION['notified_reply_ids'] ?? [];
+        $map = [];
+        if (!is_array($raw)) {
+            return $map;
+        }
+        foreach ($raw as $id) {
+            $id = (int) $id;
+            if ($id <= 0) {
+                continue;
+            }
+            $map[$id] = true;
+        }
+        return $map;
+    }
+
+    /** @param array<int,bool> $map */
+    private function saveNotifiedReplyIdsMap(array $map): void
+    {
+        $ids = array_keys($map);
+        rsort($ids, SORT_NUMERIC);
+        $_SESSION['notified_reply_ids'] = array_slice($ids, 0, 500);
     }
 
     private function resolvePostFilterQuery(): string

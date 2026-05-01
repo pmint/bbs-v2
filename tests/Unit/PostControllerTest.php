@@ -21,7 +21,7 @@ final class PostControllerTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/posts';
     }
 
-    public function testIndexShowsUnreadReplyBarForRepliesToOwnedPosts(): void
+    public function testIndexShowsUnreadReplyBarAndSummaryNoticeForRepliesToOwnedPosts(): void
     {
         $service = new PostService(new InMemoryPostRepository());
         $controller = new PostController($service);
@@ -37,6 +37,49 @@ final class PostControllerTest extends TestCase
 
         self::assertStringContainsString('未読返信 1件', $html);
         self::assertStringContainsString('mark_read_reply_id=' . (int) $reply->id . '#post-' . (int) $reply->id, $html);
+        self::assertStringContainsString('未読返信があります。', $html);
+        self::assertStringNotContainsString('あなたの投稿「root title」に返信がありました。', $html);
+        self::assertSame([(int) $reply->id], $_SESSION['notified_reply_ids']);
+    }
+
+    public function testIndexShowsPluralSummaryNoticeForMultipleNewUnreadReplies(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['owner_key'] = 'owner-key';
+
+        $root = $service->createPostWithOwnerKey('me', 'root title', 'root body', 'owner-key');
+        $firstReply = $service->createPost('other', 'reply title 1', 'reply body 1', (int) $root->id);
+        $secondReply = $service->createPost('other', 'reply title 2', 'reply body 2', (int) $root->id);
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('未読返信 2件', $html);
+        self::assertStringContainsString('未読返信が2件あります。', $html);
+        self::assertSame([(int) $secondReply->id, (int) $firstReply->id], $_SESSION['notified_reply_ids']);
+    }
+
+    public function testIndexDoesNotRepeatSummaryNoticeForAlreadyNotifiedUnreadReply(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['owner_key'] = 'owner-key';
+
+        $root = $service->createPostWithOwnerKey('me', 'root title', 'root body', 'owner-key');
+        $service->createPost('other', 'reply title', 'reply body', (int) $root->id);
+
+        ob_start();
+        $controller->index();
+        ob_end_clean();
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('未読返信 1件', $html);
+        self::assertStringNotContainsString('未読返信があります。', $html);
     }
 
     public function testIndexMarksReplyAsReadWhenMarkReadReplyIdIsPassed(): void
@@ -55,6 +98,8 @@ final class PostControllerTest extends TestCase
 
         self::assertSame([(int) $reply->id], $_SESSION['read_reply_ids']);
         self::assertStringNotContainsString('未読返信 1件', $html);
+        self::assertStringNotContainsString('未読返信があります。', $html);
+        self::assertArrayNotHasKey('notified_reply_ids', $_SESSION);
     }
 
     public function testIndexIgnoresInvalidMarkReadReplyId(): void
@@ -72,6 +117,24 @@ final class PostControllerTest extends TestCase
         ob_end_clean();
 
         self::assertArrayNotHasKey('read_reply_ids', $_SESSION);
+    }
+
+    public function testIndexDoesNotNotifyForSelfReply(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['owner_key'] = 'owner-key';
+
+        $root = $service->createPostWithOwnerKey('me', 'root title', 'root body', 'owner-key');
+        $service->createPostWithOwnerKey('me', 'self reply', 'self body', 'owner-key', (int) $root->id);
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringNotContainsString('未読返信 1件', $html);
+        self::assertStringNotContainsString('未読返信があります。', $html);
+        self::assertArrayNotHasKey('notified_reply_ids', $_SESSION);
     }
 
     public function testCreatePrefillsTitleWithFilterKeywordWhenFilteringIsActive(): void

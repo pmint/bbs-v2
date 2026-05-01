@@ -29,8 +29,10 @@ final class PageControllerTest extends TestCase
         $html = (string) ob_get_clean();
 
         self::assertStringContainsString('今後の予定', $html);
+        self::assertStringContainsString('通知体験の整理を行いました。', $html);
         self::assertStringContainsString('通知体験の整理', $html);
         self::assertStringContainsString('投稿前の確認をしやすくする', $html);
         self::assertStringContainsString('探しやすさを広げる', $html);
+        self::assertStringContainsString('入力補助を検討する', $html);
     }
 }
