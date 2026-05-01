@@ -33,8 +33,8 @@ final class PageControllerTest extends TestCase
         self::assertStringContainsString('投稿前の確認をしやすくしました。', $html);
         self::assertStringContainsString('通知体験の整理を行いました。', $html);
         self::assertStringContainsString('通知体験の整理', $html);
-        self::assertStringContainsString('入力補助を検討する', $html);
-        self::assertStringContainsString('保存検索を検討する', $html);
-        self::assertStringContainsString('運用しやすさを整える', $html);
+        self::assertStringContainsString('投稿入力の補助を小さく試す', $html);
+        self::assertStringContainsString('検索条件の再利用を検討する', $html);
+        self::assertStringContainsString('広報室と運用導線を整える', $html);
     }
 }
