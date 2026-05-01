@@ -35,6 +35,8 @@ if (!empty($replyToId ?? null)) {
             <input id="title" class="short-input" name="title" type="text" value="<?= htmlspecialchars((string) ($old['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
+        <?php require __DIR__ . '/_tag_assist.php'; ?>
+
         <div class="field">
             <label for="body">本文</label>
             <textarea id="body" name="body" rows="8"><?= htmlspecialchars((string) ($old['body'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>

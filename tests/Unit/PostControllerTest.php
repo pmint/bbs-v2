@@ -154,8 +154,25 @@ final class PostControllerTest extends TestCase
         self::assertStringContainsString('data-draft-key="bbs-v2:create"', $html);
         self::assertStringContainsString('data-preview-toggle', $html);
         self::assertStringContainsString('data-draft-clear', $html);
+        self::assertStringContainsString('よく使うタグ:', $html);
+        self::assertStringContainsString('data-insert-tag="#意見"', $html);
         self::assertStringContainsString('投稿前確認', $html);
         self::assertStringContainsString('下書きはこのブラウザに残ります。', $html);
+    }
+
+    public function testCreateShowsExistingHashtagsAsInputAssists(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $service->createPost('alice', '#開発 title', 'body');
+        $service->createPost('bob', 'other', '#相談 body');
+        $controller = new PostController($service);
+
+        ob_start();
+        $controller->create();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('data-insert-tag="#開発"', $html);
+        self::assertStringContainsString('data-insert-tag="#相談"', $html);
     }
 
     public function testEditShowsDraftAndPreviewTools(): void
@@ -174,6 +191,8 @@ final class PostControllerTest extends TestCase
         self::assertStringContainsString('data-draft-key="bbs-v2:edit:' . (int) $post->id . '"', $html);
         self::assertStringContainsString('data-preview-toggle', $html);
         self::assertStringContainsString('data-draft-clear', $html);
+        self::assertStringContainsString('よく使うタグ:', $html);
+        self::assertStringContainsString('data-insert-tag="#意見"', $html);
         self::assertStringContainsString('投稿前確認', $html);
     }
 

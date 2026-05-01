@@ -29,12 +29,13 @@ final class PageControllerTest extends TestCase
         $html = (string) ob_get_clean();
 
         self::assertStringContainsString('今後の予定', $html);
+        self::assertStringContainsString('書き込み画面でタグを入れやすくしました。', $html);
         self::assertStringContainsString('過去ログ検索の条件を見直しやすくしました。', $html);
         self::assertStringContainsString('投稿前の確認をしやすくしました。', $html);
         self::assertStringContainsString('通知体験の整理を行いました。', $html);
         self::assertStringContainsString('通知体験の整理', $html);
-        self::assertStringContainsString('投稿入力の補助を小さく試す', $html);
         self::assertStringContainsString('検索条件の再利用を検討する', $html);
         self::assertStringContainsString('広報室と運用導線を整える', $html);
+        self::assertStringContainsString('小さな改善候補を整理する', $html);
     }
 }

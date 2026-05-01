@@ -253,6 +253,15 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             background: rgba(239, 239, 239, 0.45);
         }
         .tag-controls .clear-filter-link { white-space: nowrap; }
+        .tag-assist {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 0 0 12px;
+        }
+        .tag-assist .meta { margin: 0 0.2rem 0 0; }
+        .tag-assist button { margin: 0; }
         .filter-actions {
             margin-top: 10px;
             display: flex;
@@ -369,6 +378,7 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             body: form.querySelector('[name="body"]'),
         };
         if (!fields.author || !fields.title || !fields.body) return;
+        let lastInputTarget = fields.title;
 
         const status = form.querySelector('[data-draft-status]');
         const clearButton = form.querySelector('[data-draft-clear]');
@@ -377,6 +387,7 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
         const previewAuthor = form.querySelector('[data-preview-author]');
         const previewTitle = form.querySelector('[data-preview-title]');
         const previewBody = form.querySelector('[data-preview-body]');
+        const tagButtons = form.querySelectorAll('[data-insert-tag]');
 
         const setStatus = (text) => {
             if (status) status.textContent = text;
@@ -396,6 +407,23 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             if (!storageAvailable || draftKey === '') return;
             window.localStorage.setItem(draftKey, JSON.stringify(readValues()));
             setStatus('下書き保存済み');
+        };
+        const insertTextAtCursor = (field, text) => {
+            if (!field || text === '') return;
+            const start = Number.isInteger(field.selectionStart) ? field.selectionStart : field.value.length;
+            const end = Number.isInteger(field.selectionEnd) ? field.selectionEnd : start;
+            const before = field.value.slice(0, start);
+            const after = field.value.slice(end);
+            const prefix = before === '' || /\s$/.test(before) ? '' : ' ';
+            const suffix = after === '' || /^\s/.test(after) ? ' ' : '';
+            const insertion = `${prefix}${text}${suffix}`;
+            field.value = before + insertion + after;
+            const cursor = before.length + insertion.length;
+            field.focus();
+            if (typeof field.setSelectionRange === 'function') {
+                field.setSelectionRange(cursor, cursor);
+            }
+            field.dispatchEvent(new Event('input', { bubbles: true }));
         };
 
         if (storageAvailable && draftKey !== '') {
@@ -423,6 +451,11 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
                 renderPreview();
             }
         });
+        [fields.title, fields.body].forEach((field) => {
+            field.addEventListener('focus', () => {
+                lastInputTarget = field;
+            });
+        });
         form.addEventListener('submit', () => {
             if (storageAvailable && draftKey !== '') {
                 window.localStorage.removeItem(draftKey);
@@ -448,6 +481,17 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
                 }
             });
         }
+
+        tagButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const tag = button.getAttribute('data-insert-tag') || '';
+                const active = document.activeElement;
+                const target = form.contains(active) && (active === fields.title || active === fields.body)
+                    ? active
+                    : lastInputTarget;
+                insertTextAtCursor(target, tag);
+            });
+        });
     });
 
     const messages = <?= json_encode($flashMessages, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;

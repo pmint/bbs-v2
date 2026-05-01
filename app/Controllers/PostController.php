@@ -15,6 +15,8 @@ use RuntimeException;
 
 final class PostController
 {
+    private const DEFAULT_INPUT_TAGS = ['意見', '要望', '雑談', '質問'];
+
     public function __construct(private PostService $service)
     {
     }
@@ -103,6 +105,7 @@ final class PostController
             'csrfToken' => Csrf::token(),
             'replyToPost' => $replyToPost,
             'replyToId' => $replyToId > 0 ? $replyToId : null,
+            'quickTags' => $this->buildInputTagSuggestions(),
         ]);
 
         unset($_SESSION['old']);
@@ -160,6 +163,7 @@ final class PostController
                 'post' => $post,
                 'old' => $_SESSION['old'] ?? [],
                 'csrfToken' => Csrf::token(),
+                'quickTags' => $this->buildInputTagSuggestions(),
             ]);
             unset($_SESSION['old']);
         } catch (RuntimeException $e) {
@@ -304,6 +308,29 @@ final class PostController
             return '';
         }
         return $query . ' ';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildInputTagSuggestions(): array
+    {
+        $tags = [];
+        foreach (Hashtag::buildTagCounts($this->service->listPosts(), 8) as $item) {
+            $tag = trim((string) ($item['tag'] ?? ''));
+            if ($tag === '' || in_array($tag, $tags, true)) {
+                continue;
+            }
+            $tags[] = $tag;
+        }
+
+        foreach (self::DEFAULT_INPUT_TAGS as $tag) {
+            if (!in_array($tag, $tags, true)) {
+                $tags[] = $tag;
+            }
+        }
+
+        return array_slice($tags, 0, 8);
     }
 
     private function getOrCreateOwnerKey(): string
