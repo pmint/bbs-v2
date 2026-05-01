@@ -11,6 +11,7 @@ $fromDate = (string) ($fromDate ?? '');
 $toDate = (string) ($toDate ?? '');
 $hasSearchCriteria = (bool) ($hasSearchCriteria ?? false);
 $resultCount = (int) ($resultCount ?? 0);
+$recentSearches = is_array($recentSearches ?? null) ? $recentSearches : [];
 $buildLogSearchUrl = static function (array $params): string {
     $clean = [];
     foreach ($params as $key => $value) {
@@ -22,6 +23,22 @@ $buildLogSearchUrl = static function (array $params): string {
     }
     $queryString = http_build_query($clean);
     return Url::to('/logs') . ($queryString !== '' ? '?' . $queryString : '');
+};
+$describeLogSearch = static function (array $search): string {
+    $parts = [];
+    $searchQuery = trim((string) ($search['q'] ?? ''));
+    $searchFrom = trim((string) ($search['from'] ?? ''));
+    $searchTo = trim((string) ($search['to'] ?? ''));
+    if ($searchQuery !== '') {
+        $parts[] = '検索語「' . $searchQuery . '」';
+    }
+    if ($searchFrom !== '') {
+        $parts[] = '開始日 ' . $searchFrom;
+    }
+    if ($searchTo !== '') {
+        $parts[] = '終了日 ' . $searchTo;
+    }
+    return implode(' / ', $parts);
 };
 ?>
 <h1>過去ログ検索</h1>
@@ -88,6 +105,22 @@ $buildLogSearchUrl = static function (array $params): string {
             <?php endif; ?>
             <a href="<?= Url::to('/logs') ?>">条件をすべて解除</a>
         </p>
+    </div>
+<?php endif; ?>
+
+<?php if ($recentSearches !== []): ?>
+    <div class="search-history">
+        <h3>最近使った検索条件</h3>
+        <ul>
+            <?php foreach ($recentSearches as $search): ?>
+                <?php if (!is_array($search)) { continue; } ?>
+                <?php $description = $describeLogSearch($search); ?>
+                <?php if ($description === '') { continue; } ?>
+                <li>
+                    <a href="<?= htmlspecialchars($buildLogSearchUrl($search), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?></a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
     </div>
 <?php endif; ?>
 

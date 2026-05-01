@@ -54,6 +54,12 @@ final class LogControllerTest extends TestCase
         self::assertStringContainsString('検索結果: 1件', $html);
         self::assertStringContainsString('検索語だけ解除', $html);
         self::assertStringContainsString('条件をすべて解除', $html);
+        self::assertStringContainsString('最近使った検索条件', $html);
+        self::assertStringContainsString('q=needle', $html);
+        self::assertSame(
+            [['q' => 'needle', 'from' => '', 'to' => '']],
+            $_SESSION['recent_log_searches']
+        );
     }
 
     public function testIndexShowsSearchSummaryAndNoResultMessageForDateRange(): void
@@ -89,5 +95,37 @@ final class LogControllerTest extends TestCase
 
         self::assertStringContainsString('この月で検索', $html);
         self::assertStringContainsString('from=2026-02-01&amp;to=2026-02-28', $html);
+    }
+
+    public function testIndexShowsRecentSearchesWhenNoSearchCriteriaIsProvided(): void
+    {
+        $repo = new InMemoryPostRepository();
+        $controller = new LogController(new LogService($repo));
+        $_SESSION['recent_log_searches'] = [
+            ['q' => 'alpha', 'from' => '2026-02-01', 'to' => ''],
+        ];
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('最近使った検索条件', $html);
+        self::assertStringContainsString('検索語「alpha」 / 開始日 2026-02-01', $html);
+        self::assertStringContainsString('q=alpha&amp;from=2026-02-01', $html);
+    }
+
+    public function testInvalidSearchCriteriaIsNotStoredInRecentSearches(): void
+    {
+        $repo = new InMemoryPostRepository();
+        $controller = new LogController(new LogService($repo));
+        $_GET['from'] = 'invalid-date';
+
+        ob_start();
+        $controller->index();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('開始日の形式が不正です。', $html);
+        self::assertArrayNotHasKey('recent_log_searches', $_SESSION);
+        self::assertStringNotContainsString('最近使った検索条件', $html);
     }
 }

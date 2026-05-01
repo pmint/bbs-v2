@@ -11,6 +11,8 @@ use InvalidArgumentException;
 
 final class LogController
 {
+    private const RECENT_LOG_SEARCH_LIMIT = 5;
+
     public function __construct(private LogService $service)
     {
     }
@@ -27,6 +29,7 @@ final class LogController
         if ($hasSearchCriteria) {
             try {
                 $results = $this->service->searchLogs($query, $fromDate, $toDate);
+                $this->rememberSearchCriteria($query, $fromDate, $toDate);
             } catch (InvalidArgumentException $e) {
                 $errors[] = $e->getMessage();
             }
@@ -40,6 +43,7 @@ final class LogController
             'toDate' => $toDate,
             'hasSearchCriteria' => $hasSearchCriteria,
             'resultCount' => count($results),
+            'recentSearches' => $this->getRecentLogSearches(),
             'results' => $results,
             'monthList' => $this->service->listDownloadableMonths(),
             'likedMap' => $this->buildLikedMap($results),
@@ -95,5 +99,74 @@ final class LogController
     private function hasSearchCriteria(string $query, string $fromDate, string $toDate): bool
     {
         return trim($query) !== '' || trim($fromDate) !== '' || trim($toDate) !== '';
+    }
+
+    private function rememberSearchCriteria(string $query, string $fromDate, string $toDate): void
+    {
+        $entry = $this->normalizeSearchCriteria($query, $fromDate, $toDate);
+        if ($entry === null) {
+            return;
+        }
+
+        $recent = [];
+        foreach ($this->getRecentLogSearches() as $item) {
+            if ($item === $entry) {
+                continue;
+            }
+            $recent[] = $item;
+        }
+        array_unshift($recent, $entry);
+
+        $_SESSION['recent_log_searches'] = array_slice($recent, 0, self::RECENT_LOG_SEARCH_LIMIT);
+    }
+
+    /**
+     * @return list<array{q:string,from:string,to:string}>
+     */
+    private function getRecentLogSearches(): array
+    {
+        $raw = $_SESSION['recent_log_searches'] ?? [];
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        $recent = [];
+        foreach ($raw as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $entry = $this->normalizeSearchCriteria(
+                (string) ($item['q'] ?? ''),
+                (string) ($item['from'] ?? ''),
+                (string) ($item['to'] ?? '')
+            );
+            if ($entry === null || in_array($entry, $recent, true)) {
+                continue;
+            }
+            $recent[] = $entry;
+            if (count($recent) >= self::RECENT_LOG_SEARCH_LIMIT) {
+                break;
+            }
+        }
+
+        return $recent;
+    }
+
+    /**
+     * @return array{q:string,from:string,to:string}|null
+     */
+    private function normalizeSearchCriteria(string $query, string $fromDate, string $toDate): ?array
+    {
+        $entry = [
+            'q' => trim($query),
+            'from' => trim($fromDate),
+            'to' => trim($toDate),
+        ];
+
+        if (!$this->hasSearchCriteria($entry['q'], $entry['from'], $entry['to'])) {
+            return null;
+        }
+
+        return $entry;
     }
 }

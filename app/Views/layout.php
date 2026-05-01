@@ -221,6 +221,16 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             margin-right: 0.9em;
             white-space: nowrap;
         }
+        .search-history {
+            margin: 12px 0 14px;
+        }
+        .search-history h3 {
+            margin: 0 0 6px;
+            font-size: 1rem;
+        }
+        .search-history ul {
+            margin-top: 0;
+        }
         .tag-controls {
             display: flex;
             align-items: center;
