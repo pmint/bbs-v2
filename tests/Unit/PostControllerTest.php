@@ -150,6 +150,31 @@ final class PostControllerTest extends TestCase
         self::assertStringContainsString('id="title"', $html);
         self::assertStringContainsString('value="#意見 "', $html);
         self::assertStringContainsString('<textarea id="body" name="body" rows="8"></textarea>', $html);
+        self::assertStringContainsString('data-draft-form', $html);
+        self::assertStringContainsString('data-draft-key="bbs-v2:create"', $html);
+        self::assertStringContainsString('data-preview-toggle', $html);
+        self::assertStringContainsString('data-draft-clear', $html);
+        self::assertStringContainsString('投稿前確認', $html);
+        self::assertStringContainsString('下書きはこのブラウザに残ります。', $html);
+    }
+
+    public function testEditShowsDraftAndPreviewTools(): void
+    {
+        $service = new PostService(new InMemoryPostRepository());
+        $controller = new PostController($service);
+        $_SESSION['owner_key'] = 'owner-key';
+
+        $post = $service->createPostWithOwnerKey('me', 'edit title', 'edit body', 'owner-key');
+
+        ob_start();
+        $controller->edit(['id' => (string) $post->id]);
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('data-draft-form', $html);
+        self::assertStringContainsString('data-draft-key="bbs-v2:edit:' . (int) $post->id . '"', $html);
+        self::assertStringContainsString('data-preview-toggle', $html);
+        self::assertStringContainsString('data-draft-clear', $html);
+        self::assertStringContainsString('投稿前確認', $html);
     }
 
     public function testIndexRendersHashtagLinksInPostTitle(): void

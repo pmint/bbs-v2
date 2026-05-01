@@ -137,6 +137,19 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             margin-bottom: 5px;
             font-weight: normal;
         }
+        .form-tools {
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .post-preview {
+            margin: 0 0 14px;
+            padding: 8px 0 2px;
+            border-top: 2px solid #c0c0c0;
+            border-bottom: 2px solid #c0c0c0;
+        }
         input[type="text"], textarea {
             width: 100%;
             box-sizing: border-box;
@@ -325,6 +338,106 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             navigator.serviceWorker.register('<?= htmlspecialchars($swUrl, ENT_QUOTES, 'UTF-8') ?>').catch(() => {});
         });
     }
+
+    const storageAvailable = (() => {
+        try {
+            const key = '__bbs_v2_storage_probe__';
+            window.localStorage.setItem(key, '1');
+            window.localStorage.removeItem(key);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    })();
+
+    document.querySelectorAll('form[data-draft-form]').forEach((form) => {
+        const draftKey = form.getAttribute('data-draft-key') || '';
+        const fields = {
+            author: form.querySelector('[name="author"]'),
+            title: form.querySelector('[name="title"]'),
+            body: form.querySelector('[name="body"]'),
+        };
+        if (!fields.author || !fields.title || !fields.body) return;
+
+        const status = form.querySelector('[data-draft-status]');
+        const clearButton = form.querySelector('[data-draft-clear]');
+        const previewButton = form.querySelector('[data-preview-toggle]');
+        const previewPanel = form.querySelector('[data-preview-panel]');
+        const previewAuthor = form.querySelector('[data-preview-author]');
+        const previewTitle = form.querySelector('[data-preview-title]');
+        const previewBody = form.querySelector('[data-preview-body]');
+
+        const setStatus = (text) => {
+            if (status) status.textContent = text;
+        };
+        const readValues = () => ({
+            author: fields.author.value,
+            title: fields.title.value,
+            body: fields.body.value,
+        });
+        const renderPreview = () => {
+            const values = readValues();
+            if (previewAuthor) previewAuthor.textContent = values.author.trim() || '（無記名）';
+            if (previewTitle) previewTitle.textContent = values.title.trim() || '（題名なし）';
+            if (previewBody) previewBody.textContent = values.body.trim() || '（本文なし）';
+        };
+        const saveDraft = () => {
+            if (!storageAvailable || draftKey === '') return;
+            window.localStorage.setItem(draftKey, JSON.stringify(readValues()));
+            setStatus('下書き保存済み');
+        };
+
+        if (storageAvailable && draftKey !== '') {
+            const rawDraft = window.localStorage.getItem(draftKey);
+            if (rawDraft) {
+                try {
+                    const draft = JSON.parse(rawDraft);
+                    if (draft && typeof draft === 'object') {
+                        if (typeof draft.author === 'string') fields.author.value = draft.author;
+                        if (typeof draft.title === 'string') fields.title.value = draft.title;
+                        if (typeof draft.body === 'string') fields.body.value = draft.body;
+                        setStatus('下書きを戻しました。');
+                    }
+                } catch (error) {
+                    window.localStorage.removeItem(draftKey);
+                }
+            }
+        } else {
+            setStatus('下書き保存は使えません。');
+        }
+
+        form.addEventListener('input', () => {
+            saveDraft();
+            if (previewPanel && !previewPanel.hidden) {
+                renderPreview();
+            }
+        });
+        form.addEventListener('submit', () => {
+            if (storageAvailable && draftKey !== '') {
+                window.localStorage.removeItem(draftKey);
+            }
+        });
+
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                if (storageAvailable && draftKey !== '') {
+                    window.localStorage.removeItem(draftKey);
+                }
+                setStatus('保存分を消しました。');
+            });
+        }
+
+        if (previewButton && previewPanel) {
+            previewButton.addEventListener('click', () => {
+                const willShow = previewPanel.hidden;
+                previewPanel.hidden = !willShow;
+                previewButton.textContent = willShow ? '確認を閉じる' : '確認する';
+                if (willShow) {
+                    renderPreview();
+                }
+            });
+        }
+    });
 
     const messages = <?= json_encode($flashMessages, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     if (!Array.isArray(messages) || messages.length === 0) return;
