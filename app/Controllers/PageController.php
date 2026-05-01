@@ -22,6 +22,7 @@ final class PageController
         View::render('pages/press', [
             'title' => '広報室',
             'updates' => $this->updates(),
+            'roadmap' => $this->roadmap(),
             'feedbackPosts' => $feedbackPosts,
         ]);
     }
@@ -106,6 +107,39 @@ final class PageController
                 'date' => '2026-02-26',
                 'change' => '広報室の #意見 / #要望 リンクを絞り込み付きに更新しました。',
                 'usage' => '広報室からリンクを開くと関連投稿だけ確認できます。',
+            ],
+        ];
+    }
+
+    /**
+     * @return list<array{priority:string,title:string,items:list<string>}>
+     */
+    private function roadmap(): array
+    {
+        return [
+            [
+                'priority' => '優先度A',
+                'title' => '通知体験の整理',
+                'items' => [
+                    '未読返信と一時通知の役割を分け、見落としにくくします。',
+                    '同じ返信の通知が強く出すぎないよう、表示ルールを見直します。',
+                ],
+            ],
+            [
+                'priority' => '優先度B',
+                'title' => '投稿前の確認をしやすくする',
+                'items' => [
+                    '下書きやプレビュー補助を検討します。',
+                    '入力途中の内容を戻りやすくする方法を整理します。',
+                ],
+            ],
+            [
+                'priority' => '優先度C',
+                'title' => '探しやすさを広げる',
+                'items' => [
+                    '複合条件検索を検討します。',
+                    '検索履歴や保存検索の必要性を見ます。',
+                ],
             ],
         ];
     }

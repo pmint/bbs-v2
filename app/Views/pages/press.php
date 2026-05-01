@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Support\Url;
 
 $updates = is_array($updates ?? null) ? $updates : [];
+$roadmap = is_array($roadmap ?? null) ? $roadmap : [];
 $feedbackPosts = is_array($feedbackPosts ?? null) ? $feedbackPosts : [];
 ?>
 <h1>広報室</h1>
@@ -25,6 +26,20 @@ $feedbackPosts = is_array($feedbackPosts ?? null) ? $feedbackPosts : [];
             </li>
         <?php endforeach; ?>
     </ul>
+<?php endif; ?>
+
+<h2>今後の予定</h2>
+<?php if (empty($roadmap)): ?>
+    <p>今後の予定は整理中です。</p>
+<?php else: ?>
+    <dl>
+        <?php foreach ($roadmap as $item): ?>
+            <dt><?= htmlspecialchars((string) ($item['priority'] ?? ''), ENT_QUOTES, 'UTF-8') ?>：<?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></dt>
+            <?php foreach (($item['items'] ?? []) as $plannedItem): ?>
+                <dd><?= htmlspecialchars((string) $plannedItem, ENT_QUOTES, 'UTF-8') ?></dd>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+    </dl>
 <?php endif; ?>
 
 <h2>更新履歴</h2>
