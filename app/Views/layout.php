@@ -210,6 +210,17 @@ $documentTitle = $pageTitle !== '' ? $pageTitle . ' | ' . $siteTitle : $siteTitl
             margin: 0 0 14px;
             max-width: 760px;
         }
+        .search-summary {
+            margin: 10px 0 12px;
+        }
+        .search-summary .meta {
+            margin: 0 0 4px;
+        }
+        .search-summary .meta span,
+        .search-summary .meta a {
+            margin-right: 0.9em;
+            white-space: nowrap;
+        }
         .tag-controls {
             display: flex;
             align-items: center;

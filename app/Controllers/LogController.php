@@ -22,8 +22,9 @@ final class LogController
         $toDate = (string) ($_GET['to'] ?? '');
         $errors = [];
         $results = [];
+        $hasSearchCriteria = $this->hasSearchCriteria($query, $fromDate, $toDate);
 
-        if ($this->hasSearchCriteria($query, $fromDate, $toDate)) {
+        if ($hasSearchCriteria) {
             try {
                 $results = $this->service->searchLogs($query, $fromDate, $toDate);
             } catch (InvalidArgumentException $e) {
@@ -37,6 +38,8 @@ final class LogController
             'query' => $query,
             'fromDate' => $fromDate,
             'toDate' => $toDate,
+            'hasSearchCriteria' => $hasSearchCriteria,
+            'resultCount' => count($results),
             'results' => $results,
             'monthList' => $this->service->listDownloadableMonths(),
             'likedMap' => $this->buildLikedMap($results),
